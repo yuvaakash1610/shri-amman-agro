@@ -24,7 +24,8 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
     return next(); // Let the error handler catch it
   }
-  res.sendFile(path.resolve(__dirname, '../frontend', 'index.html'));
+  const rootPath = path.join(__dirname, '../frontend');
+  res.sendFile('index.html', { root: rootPath });
 });
 
 // Error handling middleware
