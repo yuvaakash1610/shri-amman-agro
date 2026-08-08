@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Shri Amman Agro Traders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="split-layout">
+        <!-- Left Side: Branding / Imagery -->
+        <div class="brand-section">
+            <div class="brand-overlay"></div>
+            <div class="brand-content">
+                <div class="logo-placeholder">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h1>Shri Amman<br>Agro Traders</h1>
+                <p>Advanced Inventory & Management System</p>
+            </div>
+        </div>
+
+        <!-- Right Side: Register Form -->
+        <div class="form-section">
+            <div class="form-container">
+                <h2>Create Account</h2>
+                <p class="subtitle">Enter your details to sign up for an account.</p>
+
+                <div id="error-message" class="alert error hidden">
+                    <!-- Error messages will appear here -->
+                </div>
+
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" name="email" required placeholder="you@example.com" autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" required placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="register-btn" class="primary-btn">
+                        <span class="btn-text">Sign Up</span>
+                        <div class="loader hidden"></div>
+                    </button>
+
+                    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+                        <span style="color: var(--text-muted);">Already have an account?</span>
+                        <a href="index.html" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Sign in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="js/register.js"></script>
+</body>
+</html>
