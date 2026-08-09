@@ -9,7 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #F8FAF9; margin: 0; padding: 2rem; color: #1F2937; }
-        .dashboard-container { max-width: 800px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .dashboard-container { max-width: 900px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .navbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .nav-link { text-decoration: none; color: #1F2937; background: white; padding: 0.7rem 1rem; border-radius: 999px; border: 1px solid #E5E7EB; font-weight: 600; }
+        .nav-link.active { background: #2F6B38; color: white; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E5E7EB; padding-bottom: 1rem; margin-bottom: 2rem; }
         .role-badge { background-color: #2F6B38; color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; }
         button { background-color: #EF4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: inherit; }
@@ -18,6 +21,7 @@
     </style>
 </head>
 <body>
+    <div class="navbar" id="top-nav"></div>
     <div class="dashboard-container">
         <div class="header">
             <div>
@@ -31,6 +35,7 @@
         </div>
         <div class="content">
             <p>This is a protected page. Your authentication token was successfully verified by the backend API.</p>
+            <p><a href="customers.html" style="color: #2F6B38; font-weight: 600;">Go to Customer Management</a></p>
             <p>Data fetched from `/api/auth/me`:</p>
             <pre id="api-data" style="background: #F3F4F6; padding: 1rem; border-radius: 6px; overflow-x: auto;"></pre>
         </div>

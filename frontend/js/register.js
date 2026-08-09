@@ -5,6 +5,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = submitBtn.querySelector('.btn-text');
     const loader = submitBtn.querySelector('.loader');
 
+    const getApiBaseUrl = () => {
+        const configuredApiBase = (window.__API_BASE_URL__ || '').replace(/\/$/, '');
+        if (configuredApiBase) {
+            return configuredApiBase;
+        }
+
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return `${window.location.protocol}//${window.location.hostname}:3000`;
+        }
+
+        return window.location.origin;
+    };
+
+    const apiBaseUrl = getApiBaseUrl();
+
     const showError = (message) => {
         errorAlert.textContent = message;
         errorAlert.classList.remove('hidden');
@@ -49,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -57,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ fullName, email, password })
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await response.json() : { message: await response.text() };
 
             if (!response.ok) {
                 throw new Error(data.message || 'Registration failed. Please try again.');
@@ -67,8 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Redirect to dashboard
-            window.location.href = 'dashboard.html';
+            // Redirect to customer management
+            window.location.href = 'customers.html';
 
         } catch (error) {
             showError(error.message);

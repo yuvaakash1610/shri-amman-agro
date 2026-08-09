@@ -2,30 +2,111 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const { initializeDatabase } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const customerRoutes = require('./routes/customerRoutes');
+const companyRoutes = require('./routes/companyRoutes');
+const productRoutes = require('./routes/productRoutes');
+const stockRoutes = require('./routes/stockRoutes');
+const priceRoutes = require('./routes/priceRoutes');
+const { authenticateToken } = require('./middlewares/authMiddleware');
+const companyController = require('./controllers/companyController');
+const productController = require('./controllers/productController');
+const stockController = require('./controllers/stockController');
+const priceController = require('./controllers/priceController');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const frontendPath = path.resolve(__dirname, '..', 'frontend');
+
+const sendFrontendFile = (res, relativePath = 'index.html') => {
+  res.sendFile(path.join(frontendPath, relativePath));
+};
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(frontendPath));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/customers', customerRoutes);
+
+app.get('/api/companies', authenticateToken, companyController.listCompanies);
+app.get('/api/companies/:id', authenticateToken, companyController.getCompany);
+app.post('/api/companies', authenticateToken, companyController.createCompany);
+app.put('/api/companies/:id', authenticateToken, companyController.updateCompany);
+app.delete('/api/companies/:id', authenticateToken, companyController.deleteCompany);
+
+app.get('/api/products/categories', authenticateToken, productController.listCategories);
+app.post('/api/products/categories', authenticateToken, productController.createCategory);
+app.get('/api/products/units', authenticateToken, productController.listUnits);
+app.post('/api/products/units', authenticateToken, productController.createUnit);
+app.get('/api/products', authenticateToken, productController.listProducts);
+app.get('/api/products/:id', authenticateToken, productController.getProduct);
+app.post('/api/products', authenticateToken, productController.createProduct);
+app.put('/api/products/:id', authenticateToken, productController.updateProduct);
+app.delete('/api/products/:id', authenticateToken, productController.deleteProduct);
+
+app.get('/api/stock', authenticateToken, stockController.listStock);
+app.get('/api/stock/:productId', authenticateToken, stockController.getStockByProduct);
+app.post('/api/stock/movement', authenticateToken, stockController.createStockMovement);
+app.put('/api/stock/:productId', authenticateToken, stockController.updateStock);
+app.get('/api/stock/:productId/movements', authenticateToken, stockController.listStockMovements);
+
+app.get('/api/prices', authenticateToken, priceController.listPrices);
+app.get('/api/prices/:productId', authenticateToken, priceController.getPricesByProduct);
+app.post('/api/prices', authenticateToken, priceController.createPrice);
+app.put('/api/prices/:id', authenticateToken, priceController.updatePrice);
+app.get('/api/prices/:productId/history', authenticateToken, priceController.getPriceHistory);
+
+app.get('/', (req, res) => {
+  sendFrontendFile(res, 'index.html');
+});
+
+app.get('/register.html', (req, res) => {
+  sendFrontendFile(res, 'register.html');
+});
+
+app.get('/dashboard.html', (req, res) => {
+  sendFrontendFile(res, 'dashboard.html');
+});
+
+app.get('/customers.html', (req, res) => {
+  sendFrontendFile(res, 'customers.html');
+});
+
+app.get('/companies.html', (req, res) => {
+  sendFrontendFile(res, 'companies.html');
+});
+
+app.get('/products.html', (req, res) => {
+  sendFrontendFile(res, 'products.html');
+});
+
+app.get('/stock.html', (req, res) => {
+  sendFrontendFile(res, 'stock.html');
+});
+
+app.get('/prices.html', (req, res) => {
+  sendFrontendFile(res, 'prices.html');
+});
 
 // Catch-all route to serve the frontend for any non-API request
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
-    return next(); // Let the error handler catch it
+    return res.status(404).json({ message: 'API endpoint not found.' });
   }
-  const rootPath = path.join(__dirname, '../frontend');
-  res.sendFile('index.html', { root: rootPath });
+
+  if (req.path.includes('.')) {
+    return res.status(404).send('Not found');
+  }
+
+  sendFrontendFile(res, 'index.html');
 });
 
 // Error handling middleware
@@ -34,6 +115,13 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+initializeDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Database initialization failed:', error);
+    process.exit(1);
+  });

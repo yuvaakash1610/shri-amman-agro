@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - Shri Amman Agro Traders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: block; background: #f4f8f3; }
+        .page-shell { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+        .navbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+        .nav-link { text-decoration: none; color: var(--text-main); background: white; padding: 0.7rem 1rem; border-radius: 999px; border: 1px solid var(--border-color); font-weight: 600; }
+        .nav-link.active { background: var(--primary-color); color: white; }
+        .topbar h1 { font-size: 2rem; color: var(--primary-color); }
+        .topbar p { color: var(--text-muted); margin-top: 6px; }
+        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .card { background: white; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px rgba(47, 107, 56, 0.08); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { padding: 18px; }
+        .stat-card .label { color: var(--text-muted); font-size: 0.9rem; }
+        .stat-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 6px; color: var(--primary-color); }
+        .content-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
+        .panel { padding: 20px; }
+        .panel h3 { margin-bottom: 16px; color: var(--text-main); }
+        .form-grid { display: grid; gap: 14px; }
+        .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; font-family: inherit; font-size: 1rem; background: #fbfdfb; }
+        .form-grid textarea { min-height: 90px; resize: vertical; }
+        .button-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .secondary-btn { background: white; color: var(--primary-color); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; }
+        .secondary-btn:hover { background: #f3f7f3; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #edf2ed; font-size: 0.95rem; }
+        th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
+        .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #e9f5ea; color: var(--primary-color); font-size: 0.82rem; font-weight: 600; }
+        .actions button { margin-right: 6px; border: none; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .edit-btn { background: #e8f2eb; color: var(--primary-color); }
+        .delete-btn { background: #fde8e8; color: #b91c1c; }
+        .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .search-row input, .search-row select { flex: 1; min-width: 180px; }
+        .empty-state { text-align: center; color: var(--text-muted); padding: 24px 0; }
+        .hidden { display: none; }
+        @media (max-width: 980px) { .content-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="navbar" id="top-nav"></div>
+        <div class="topbar">
+            <div>
+                <h1>Customer Management</h1>
+                <p>Track customers, manage records, and grow your agro business efficiently.</p>
+            </div>
+            <div class="header-actions">
+                <button id="logout-btn" class="secondary-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="label">Total Customers</div>
+                <div class="value" id="customer-count">0</div>
+            </div>
+            <div class="card stat-card">
+                <div class="label">Active Filters</div>
+                <div class="value" id="filter-label">All</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="card panel">
+                <h3 id="form-title">Add Customer</h3>
+                <div id="form-error" class="alert error hidden"></div>
+                <form id="customer-form" class="form-grid">
+                    <input type="hidden" id="customer-id">
+                    <label>
+                        <span>Customer Name</span>
+                        <input type="text" id="customerName" required>
+                    </label>
+                    <label>
+                        <span>Phone Number</span>
+                        <input type="text" id="phoneNumber" required>
+                    </label>
+                    <label>
+                        <span>Aadhar Number</span>
+                        <input type="text" id="aadhaarNumber" required>
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input type="email" id="email">
+                    </label>
+                    <label>
+                        <span>Customer Type</span>
+                        <select id="customerType" required>
+                            <option value="Farmer">Farmer</option>
+                            <option value="Retailer">Retailer</option>
+                            <option value="Wholesaler">Wholesaler</option>
+                            <option value="Dealer">Dealer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Address</span>
+                        <textarea id="address" required></textarea>
+                    </label>
+                    <div class="button-row">
+                        <button type="submit" class="primary-btn">Save Customer</button>
+                        <button type="button" id="cancel-edit" class="secondary-btn hidden">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card panel">
+                <h3>Customer Records</h3>
+                <div class="search-row">
+                    <input type="text" id="search-input" placeholder="Search by ID, name, phone, email, or type">
+                    <select id="type-filter">
+                        <option value="">All Types</option>
+                        <option value="Farmer">Farmer</option>
+                        <option value="Retailer">Retailer</option>
+                        <option value="Wholesaler">Wholesaler</option>
+                        <option value="Dealer">Dealer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Aadhar</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/customers.js"></script>
+</body>
+</html>

@@ -7,6 +7,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = submitBtn.querySelector('.btn-text');
     const loader = submitBtn.querySelector('.loader');
 
+    const getApiBaseUrl = () => {
+        const configuredApiBase = (window.__API_BASE_URL__ || '').replace(/\/$/, '');
+        if (configuredApiBase) {
+            return configuredApiBase;
+        }
+
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return `${window.location.protocol}//${window.location.hostname}:3000`;
+        }
+
+        return window.location.origin;
+    };
+
+    const apiBaseUrl = getApiBaseUrl();
+
     // Toggle password visibility
     togglePasswordBtn.addEventListener('click', () => {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -52,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -60,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ email, password })
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await response.json() : { message: await response.text() };
 
             if (!response.ok) {
                 throw new Error(data.message || 'Login failed. Please try again.');
@@ -70,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Redirect to dashboard
+            // Redirect to the dashboard
             window.location.href = 'dashboard.html';
 
         } catch (error) {
