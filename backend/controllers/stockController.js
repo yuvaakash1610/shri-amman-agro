@@ -2,15 +2,23 @@ const db = require('../config/db');
 
 const listStock = async (req, res) => {
   try {
-    const { search = '', lowStock = '' } = req.query;
+    const { search = '', lowStock = '', outOfStock = '', categoryId = '', companyId = '' } = req.query;
     const params = [];
     const conditions = [];
     let query = `
-      SELECT s.stock_id, s.product_id, p.product_code, p.product_name, u.unit_name, u.abbreviation, s.quantity, s.reorder_level,
-             CASE WHEN s.quantity <= s.reorder_level THEN 'Low Stock' ELSE 'In Stock' END AS stock_status
+      SELECT s.stock_id, s.product_id, p.product_code, p.product_name,
+             u.unit_name, u.abbreviation, s.quantity, s.reorder_level, s.updated_at,
+             c.company_name, cat.category_name,
+             CASE
+               WHEN s.quantity = 0 THEN 'Out of Stock'
+               WHEN s.quantity < 5 THEN 'Low Stock'
+               ELSE 'In Stock'
+             END AS stock_status
       FROM stock s
       JOIN products p ON p.product_id = s.product_id
       LEFT JOIN units u ON u.unit_id = p.unit_id
+      LEFT JOIN companies c ON c.company_id = p.company_id
+      LEFT JOIN categories cat ON cat.category_id = p.category_id
     `;
 
     if (search) {
@@ -22,7 +30,21 @@ const listStock = async (req, res) => {
     }
 
     if (lowStock === 'true') {
-      conditions.push('s.quantity <= s.reorder_level');
+      conditions.push('s.quantity > 0 AND s.quantity < 5');
+    }
+
+    if (outOfStock === 'true') {
+      conditions.push('s.quantity = 0');
+    }
+
+    if (categoryId) {
+      params.push(categoryId);
+      conditions.push(`p.category_id = $${params.length}`);
+    }
+
+    if (companyId) {
+      params.push(companyId);
+      conditions.push(`p.company_id = $${params.length}`);
     }
 
     if (conditions.length > 0) {
@@ -39,6 +61,7 @@ const listStock = async (req, res) => {
   }
 };
 
+
 const getStockByProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -47,7 +70,7 @@ const getStockByProduct = async (req, res) => {
 
     const result = await db.query(
       `SELECT s.stock_id, s.product_id, p.product_code, p.product_name, u.unit_name, u.abbreviation, s.quantity, s.reorder_level,
-              CASE WHEN s.quantity <= s.reorder_level THEN 'Low Stock' ELSE 'In Stock' END AS stock_status
+              CASE WHEN s.quantity = 0 THEN 'Out of Stock' WHEN s.quantity < 5 THEN 'Low Stock' ELSE 'In Stock' END AS stock_status
        FROM stock s
        JOIN products p ON p.product_id = s.product_id
        LEFT JOIN units u ON u.unit_id = p.unit_id

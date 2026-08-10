@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         { label: 'Companies', href: 'companies.html' },
         { label: 'Products', href: 'products.html' },
         { label: 'Stock Management', href: 'stock.html' },
+        { label: 'Purchasing', href: 'purchasing.html' },
+        { label: 'Selling', href: 'selling.html' },
         { label: 'Price Management', href: 'prices.html' },
         { label: 'Logout', href: '#' }
     ];

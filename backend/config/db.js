@@ -138,6 +138,57 @@ const initializeDatabase = async () => {
     );
   `);
 
+  // Add reference_id to stock_movements if it doesn't exist
+  await pool.query(`
+    ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS reference_id INT;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS purchases (
+      purchase_id SERIAL PRIMARY KEY,
+      company_id INT NOT NULL REFERENCES companies(company_id) ON DELETE RESTRICT,
+      purchase_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      invoice_number VARCHAR(100),
+      total_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+      notes TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS purchase_items (
+      purchase_item_id SERIAL PRIMARY KEY,
+      purchase_id INT NOT NULL REFERENCES purchases(purchase_id) ON DELETE CASCADE,
+      product_id INT NOT NULL REFERENCES products(product_id) ON DELETE RESTRICT,
+      quantity INT NOT NULL CHECK (quantity > 0),
+      purchase_price NUMERIC(12,2) NOT NULL CHECK (purchase_price >= 0),
+      total_amount NUMERIC(14,2) NOT NULL
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS sales (
+      sale_id SERIAL PRIMARY KEY,
+      customer_id INT NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+      sale_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      invoice_number VARCHAR(100),
+      total_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+      notes TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS sale_items (
+      sale_item_id SERIAL PRIMARY KEY,
+      sale_id INT NOT NULL REFERENCES sales(sale_id) ON DELETE CASCADE,
+      product_id INT NOT NULL REFERENCES products(product_id) ON DELETE RESTRICT,
+      quantity INT NOT NULL CHECK (quantity > 0),
+      selling_price NUMERIC(12,2) NOT NULL CHECK (selling_price >= 0),
+      total_amount NUMERIC(14,2) NOT NULL
+    );
+  `);
+
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_customers_search ON customers (customer_name, customer_type);
   `);

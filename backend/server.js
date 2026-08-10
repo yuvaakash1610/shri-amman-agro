@@ -9,6 +9,9 @@ const companyRoutes = require('./routes/companyRoutes');
 const productRoutes = require('./routes/productRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const priceRoutes = require('./routes/priceRoutes');
+const purchaseRoutes = require('./routes/purchaseRoutes');
+const saleRoutes = require('./routes/saleRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const { authenticateToken } = require('./middlewares/authMiddleware');
 const companyController = require('./controllers/companyController');
 const productController = require('./controllers/productController');
@@ -64,6 +67,10 @@ app.post('/api/prices', authenticateToken, priceController.createPrice);
 app.put('/api/prices/:id', authenticateToken, priceController.updatePrice);
 app.get('/api/prices/:productId/history', authenticateToken, priceController.getPriceHistory);
 
+app.use('/api/purchases', purchaseRoutes);
+app.use('/api/sales', saleRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
 app.get('/', (req, res) => {
   sendFrontendFile(res, 'index.html');
 });
@@ -94,6 +101,14 @@ app.get('/stock.html', (req, res) => {
 
 app.get('/prices.html', (req, res) => {
   sendFrontendFile(res, 'prices.html');
+});
+
+app.get('/purchasing.html', (req, res) => {
+  sendFrontendFile(res, 'purchasing.html');
+});
+
+app.get('/selling.html', (req, res) => {
+  sendFrontendFile(res, 'selling.html');
 });
 
 // Catch-all route to serve the frontend for any non-API request

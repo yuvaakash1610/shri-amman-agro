@@ -5,13 +5,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const form = document.getElementById('stock-form');
     const tableBody = document.getElementById('stock-table-body');
-    const movementHistory = document.getElementById('movement-history');
     const searchInput = document.getElementById('search-input');
+    const companyFilter = document.getElementById('company-filter');
+    const categoryFilter = document.getElementById('category-filter');
     const lowStockFilter = document.getElementById('low-stock-filter');
-    const formError = document.getElementById('form-error');
-    const productSelect = document.getElementById('productId');
+    const outStockFilter = document.getElementById('out-stock-filter');
     const topNav = document.getElementById('top-nav');
 
     const getApiBaseUrl = () => {
@@ -24,8 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const apiBaseUrl = getApiBaseUrl();
-    let stockItems = [];
-    let products = [];
 
     const navItems = [
         { label: 'Dashboard', href: 'dashboard.html' },
@@ -33,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         { label: 'Companies', href: 'companies.html' },
         { label: 'Products', href: 'products.html' },
         { label: 'Stock Management', href: 'stock.html' },
+        { label: 'Purchasing', href: 'purchasing.html' },
+        { label: 'Selling', href: 'selling.html' },
         { label: 'Price Management', href: 'prices.html' },
         { label: 'Logout', href: '#' }
     ];
@@ -46,116 +45,95 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     };
 
-    const showError = (message) => {
-        formError.textContent = message;
-        formError.classList.remove('hidden');
-    };
-
-    const clearError = () => {
-        formError.textContent = '';
-        formError.classList.add('hidden');
-    };
-
-    const populateProducts = () => {
-        productSelect.innerHTML = '<option value="">Select product</option>' + products.map((product) => `<option value="${product.product_id}">${product.product_name} (${product.product_code})</option>`).join('');
-    };
-
-    const renderStock = () => {
-        const search = searchInput.value.trim().toLowerCase();
-        const filtered = stockItems.filter((item) => {
-            const haystack = [item.product_code, item.product_name].join(' ').toLowerCase();
-            const matchesSearch = !search || haystack.includes(search);
-            const matchesLowStock = !lowStockFilter.checked || Number(item.quantity) <= Number(item.reorder_level);
-            return matchesSearch && matchesLowStock;
-        });
-
-        if (filtered.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No stock records found.</td></tr>';
-            return;
+    const fetchFilters = async () => {
+        try {
+            const [compRes, catRes] = await Promise.all([
+                fetch(`${apiBaseUrl}/api/companies`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`${apiBaseUrl}/api/products/categories`, { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            
+            if (compRes.ok) {
+                const companies = await compRes.json();
+                companyFilter.innerHTML = '<option value="">All Companies</option>' + 
+                    companies.map(c => `<option value="${c.company_id}">${c.company_name}</option>`).join('');
+            }
+            if (catRes.ok) {
+                const categories = await catRes.json();
+                categoryFilter.innerHTML = '<option value="">All Categories</option>' + 
+                    categories.map(c => `<option value="${c.category_id}">${c.category_name}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Error fetching filters:', error);
         }
-
-        tableBody.innerHTML = filtered.map((item) => `
-            <tr>
-                <td><strong>${item.product_name}</strong><br><small>${item.unit_name || ''} ${item.abbreviation || ''}</small></td>
-                <td>${item.product_code}</td>
-                <td>${item.quantity}</td>
-                <td>${item.reorder_level}</td>
-                <td><span class="pill">${item.stock_status}</span></td>
-            </tr>
-        `).join('');
-    };
-
-    const fetchProducts = async () => {
-        const response = await fetch(`${apiBaseUrl}/api/products`, { headers: { Authorization: `Bearer ${token}` } });
-        products = await response.json();
-        populateProducts();
     };
 
     const fetchStock = async () => {
         try {
-            const response = await fetch(`${apiBaseUrl}/api/stock`, { headers: { Authorization: `Bearer ${token}` } });
-            if (!response.ok) throw new Error('Unable to load stock.');
-            stockItems = await response.json();
-            renderStock();
-        } catch (error) {
-            showError(error.message);
-        }
-    };
+            const params = new URLSearchParams();
+            if (searchInput.value.trim()) params.append('search', searchInput.value.trim());
+            if (companyFilter.value) params.append('companyId', companyFilter.value);
+            if (categoryFilter.value) params.append('categoryId', categoryFilter.value);
+            if (lowStockFilter.checked) params.append('lowStock', 'true');
+            if (outStockFilter.checked) params.append('outOfStock', 'true');
 
-    const fetchMovementHistory = async (productId) => {
-        if (!productId) {
-            movementHistory.innerHTML = '<p style="color: #6B7280;">Select a product to view movement history.</p>';
-            return;
-        }
-        try {
-            const response = await fetch(`${apiBaseUrl}/api/stock/${productId}/movements`, { headers: { Authorization: `Bearer ${token}` } });
-            if (!response.ok) throw new Error('Unable to load movement history.');
-            const history = await response.json();
-            if (history.length === 0) {
-                movementHistory.innerHTML = '<p style="color: #6B7280;">No movement history yet.</p>';
-                return;
-            }
-            movementHistory.innerHTML = '<ul>' + history.map((item) => `<li><strong>${item.movement_type}</strong> — Qty ${item.quantity} — ${item.reason || 'No reason'} — ${new Date(item.created_at).toLocaleString()}</li>`).join('') + '</ul>';
-        } catch (error) {
-            movementHistory.innerHTML = `<p style="color: #EF4444;">${error.message}</p>`;
-        }
-    };
-
-    productSelect.addEventListener('change', (event) => fetchMovementHistory(event.target.value));
-
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        clearError();
-        const payload = {
-            productId: productSelect.value,
-            movementType: document.getElementById('movementType').value,
-            quantity: document.getElementById('quantity').value,
-            reason: document.getElementById('reason').value.trim(),
-        };
-
-        if (!payload.productId || payload.quantity === '') {
-            showError('Please select a product and enter a quantity.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${apiBaseUrl}/api/stock/movement`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify(payload),
+            const response = await fetch(`${apiBaseUrl}/api/stock?${params.toString()}`, { 
+                headers: { Authorization: `Bearer ${token}` } 
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Unable to update stock.');
-            form.reset();
-            await fetchStock();
-            await fetchMovementHistory('');
+            
+            if (!response.ok) throw new Error('Unable to load stock.');
+            const stockItems = await response.json();
+            renderStock(stockItems);
         } catch (error) {
-            showError(error.message);
+            tableBody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:red;">Error: ${error.message}</td></tr>`;
         }
-    });
+    };
 
-    searchInput.addEventListener('input', renderStock);
-    lowStockFilter.addEventListener('change', renderStock);
+    const renderStock = (items) => {
+        if (items.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No stock records found matching filters.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = items.map((item) => {
+            let statusClass = 'pill';
+            let valClass = 'stock-val success';
+            
+            if (item.stock_status === 'Out of Stock') {
+                statusClass += ' out-stock';
+                valClass = 'stock-val danger';
+            } else if (item.stock_status === 'Low Stock') {
+                statusClass += ' low-stock';
+                valClass = 'stock-val warning';
+            }
+
+            const updatedStr = item.updated_at ? new Date(item.updated_at).toLocaleString() : 'Never';
+
+            return `
+            <tr>
+                <td>
+                    <strong>${item.product_name}</strong>
+                    <span class="meta-text">Code: ${item.product_code}</span>
+                </td>
+                <td>
+                    ${item.company_name || '-'}
+                    <span class="meta-text">${item.category_name || '-'}</span>
+                </td>
+                <td>
+                    <span class="${valClass}">${item.quantity}</span> ${item.abbreviation || ''}
+                </td>
+                <td>${item.reorder_level}</td>
+                <td><span class="${statusClass}">${item.stock_status}</span></td>
+                <td><span class="meta-text">${updatedStr}</span></td>
+            </tr>
+        `}).join('');
+    };
+
+    // Event listeners
+    searchInput.addEventListener('input', () => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(fetchStock, 300); });
+    companyFilter.addEventListener('change', fetchStock);
+    categoryFilter.addEventListener('change', fetchStock);
+    lowStockFilter.addEventListener('change', fetchStock);
+    outStockFilter.addEventListener('change', fetchStock);
 
     topNav.addEventListener('click', (event) => {
         const link = event.target.closest('a[data-logout="true"]');
@@ -167,7 +145,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Initialize
     renderNav();
-    await fetchProducts();
+    await fetchFilters();
     await fetchStock();
 });

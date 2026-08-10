@@ -181,10 +181,50 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+const searchCustomerSecure = async (req, res) => {
+  try {
+    const { searchType, searchValue } = req.body;
+    if (!searchType || !searchValue) {
+      return res.status(400).json({ message: 'Search type and value are required.' });
+    }
+
+    let condition = '';
+    const params = [searchValue];
+
+    if (searchType === 'Phone Number') {
+      condition = 'phone_number = $1';
+    } else if (searchType === 'Aadhaar Number') {
+      condition = 'aadhaar_number = $1';
+    } else if (searchType === 'Customer Name') {
+      condition = 'LOWER(customer_name) LIKE LOWER($1)';
+      params[0] = `%${searchValue}%`;
+    } else if (searchType === 'Customer ID') {
+      condition = 'customer_id = $1';
+    } else {
+      return res.status(400).json({ message: 'Invalid search type.' });
+    }
+
+    const query = `
+      SELECT id, customer_id, customer_name, phone_number, address, customer_type, email, created_at,
+             CONCAT('********', RIGHT(aadhaar_number, 4)) AS masked_aadhaar
+      FROM customers
+      WHERE ${condition}
+      ORDER BY created_at DESC
+    `;
+
+    const result = await db.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Search customer secure error:', error);
+    res.status(500).json({ message: 'Failed to search customers.' });
+  }
+};
+
 module.exports = {
   listCustomers,
   getCustomer,
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  searchCustomerSecure,
 };

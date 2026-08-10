@@ -15,27 +15,49 @@
         .topbar h1 { font-size: 2rem; color: var(--primary-color); }
         .topbar p { color: var(--text-muted); margin-top: 6px; }
         .card { background: white; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px rgba(47, 107, 56, 0.08); }
-        .content-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
         .panel { padding: 20px; }
-        .form-grid { display: grid; gap: 14px; }
-        .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; font-family: inherit; font-size: 1rem; background: #fbfdfb; }
-        .button-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-        .secondary-btn { background: white; color: var(--primary-color); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; }
-        .secondary-btn:hover { background: #f3f7f3; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #edf2ed; font-size: 0.95rem; }
         th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
-        .actions button { margin-right: 6px; border: none; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-family: inherit; }
-        .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-        .search-row input { flex: 1; min-width: 220px; }
+        .search-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; background: #fafcfa; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .search-row input[type="text"], .search-row select { padding: 0.7rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; min-width: 200px; flex: 1; }
+        .checkbox-group { display: flex; gap: 16px; align-items: center; }
+        .checkbox-group label { display: flex; align-items: center; gap: 6px; font-size: 0.95rem; color: var(--text-main); cursor: pointer; }
+        
         .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #e9f5ea; color: var(--primary-color); font-size: 0.82rem; font-weight: 600; }
+        .pill.low-stock { background: #fef3c7; color: #92400e; }
+        .pill.out-stock { background: #fee2e2; color: #991b1b; }
+        
         .empty-state { text-align: center; color: var(--text-muted); padding: 24px 0; }
-        .hidden { display: none; }
-        .navbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-        .nav-link { text-decoration: none; color: var(--text-main); background: white; padding: 0.7rem 1rem; border-radius: 999px; border: 1px solid var(--border-color); font-weight: 600; }
-        .nav-link.active { background: var(--primary-color); color: white; }
+
+        /* Unified Navbar */
+        .navbar {
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; margin-bottom: 24px;
+            background: #ffffff; padding: 12px 16px; border-radius: 14px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); align-items: center;
+            scrollbar-width: none;
+        }
+        .navbar::-webkit-scrollbar { display: none; }
+        .navbar-brand { font-weight: 700; color: #2F6B38; font-size: 1.1rem; margin-right: 12px; }
+        .nav-link {
+            text-decoration: none; color: #1F2937; background: #f3f7f3;
+            padding: 0.6rem 1.2rem; border-radius: 999px; border: 1px solid #E5E7EB;
+            font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
+        }
+        .nav-link:hover { background: #e6f0e7; color: #2F6B38; }
+        .nav-link.active { background: #2F6B38; color: white; border-color: #2F6B38; }
+        .nav-link.logout { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .nav-link.logout:hover { background: #fee2e2; color: #991b1b; }
+        
         @media (max-width: 980px) { .content-grid { grid-template-columns: 1fr; } }
+        
+        .stock-val { font-size: 1.1rem; font-weight: 700; }
+        .stock-val.danger { color: #EF4444; }
+        .stock-val.warning { color: #F59E0B; }
+        .stock-val.success { color: #10B981; }
+        
+        .meta-text { font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -44,54 +66,38 @@
         <div class="topbar">
             <div>
                 <h1>Stock Management</h1>
-                <p>Track stock levels, movement history, and reorder warnings.</p>
+                <p>View real-time stock levels automatically calculated from purchases and sales.</p>
             </div>
         </div>
 
-        <div class="content-grid">
-            <div class="card panel">
-                <h3>Stock Movement</h3>
-                <div id="form-error" class="alert error hidden"></div>
-                <form id="stock-form" class="form-grid">
-                    <label><span>Product</span><select id="productId" required></select></label>
-                    <label><span>Movement Type</span><select id="movementType" required>
-                        <option value="PURCHASE">Purchase</option>
-                        <option value="SALE">Sale</option>
-                        <option value="RETURN">Return</option>
-                        <option value="DAMAGE">Damage</option>
-                        <option value="ADJUSTMENT">Adjustment</option>
-                    </select></label>
-                    <label><span>Quantity</span><input type="number" id="quantity" min="0" required></label>
-                    <label><span>Reason</span><input type="text" id="reason"></label>
-                    <div class="button-row">
-                        <button type="submit" class="primary-btn">Update Stock</button>
-                    </div>
-                </form>
+        <div class="card panel">
+            <div class="search-row">
+                <input type="text" id="search-input" placeholder="Search product code or name...">
+                <select id="company-filter"><option value="">All Companies</option></select>
+                <select id="category-filter"><option value="">All Categories</option></select>
+                
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="low-stock-filter"> Low Stock</label>
+                    <label><input type="checkbox" id="out-stock-filter"> Out of Stock</label>
+                </div>
             </div>
-
-            <div class="card panel">
-                <h3>Current Stock</h3>
-                <div class="search-row">
-                    <input type="text" id="search-input" placeholder="Search product code or name">
-                    <label><input type="checkbox" id="low-stock-filter"> Low stock only</label>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Code</th>
-                                <th>Quantity</th>
-                                <th>Reorder</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stock-table-body"></tbody>
-                    </table>
-                </div>
-                <hr style="margin: 18px 0; border: none; border-top: 1px solid #edf2ed;">
-                <h4>Movement History</h4>
-                <div id="movement-history" style="margin-top: 12px;"></div>
+            
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Details</th>
+                            <th>Company & Category</th>
+                            <th>Current Stock</th>
+                            <th>Reorder Level</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body">
+                        <tr><td colspan="6" class="empty-state">Loading stock...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

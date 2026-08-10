@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Stock - Shri Amman Agro Traders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: block; background: #f4f8f3; }
+        .page-shell { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+        .topbar h1 { font-size: 2rem; color: var(--primary-color); }
+        .topbar p { color: var(--text-muted); margin-top: 6px; }
+        .card { background: white; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px rgba(47, 107, 56, 0.08); }
+        .content-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
+        .panel { padding: 20px; }
+        .panel h3 { margin-bottom: 16px; color: var(--text-main); }
+        .form-grid { display: grid; gap: 14px; }
+        .form-grid label span { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; color: #374151; }
+        .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; font-family: inherit; font-size: 1rem; background: #fbfdfb; }
+        .form-grid input[readonly] { background: #eef2ef; color: #6b7280; cursor: not-allowed; }
+        .button-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #edf2ed; font-size: 0.95rem; }
+        th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
+        .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .search-row input, .search-row select { flex: 1; min-width: 180px; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border-color); }
+        .empty-state { text-align: center; color: var(--text-muted); padding: 24px 0; }
+        .hidden { display: none; }
+
+        /* Unified Navbar */
+        .navbar {
+            display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; margin-bottom: 24px;
+            background: #ffffff; padding: 12px 16px; border-radius: 14px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); align-items: center;
+            scrollbar-width: none;
+        }
+        .navbar::-webkit-scrollbar { display: none; }
+        .navbar-brand { font-weight: 700; color: #2F6B38; font-size: 1.1rem; margin-right: 12px; }
+        .nav-link {
+            text-decoration: none; color: #1F2937; background: #f3f7f3;
+            padding: 0.6rem 1.2rem; border-radius: 999px; border: 1px solid #E5E7EB;
+            font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
+        }
+        .nav-link:hover { background: #e6f0e7; color: #2F6B38; }
+        .nav-link.active { background: #2F6B38; color: white; border-color: #2F6B38; }
+        .nav-link.logout { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .nav-link.logout:hover { background: #fee2e2; color: #991b1b; }
+
+        .total-display { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); margin-top: 5px; display: block; }
+        
+        .stock-indicator { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 4px; }
+        .stock-indicator.in-stock { color: #10B981; }
+        .stock-indicator.out-stock { color: #EF4444; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #invoice-content, #invoice-content * { visibility: visible; }
+            #invoice-content { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="navbar" id="top-nav"></div>
+        <div class="topbar">
+            <div>
+                <h1>Sell Stock</h1>
+                <p>Record stock sales to customers. Stock will automatically decrease.</p>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="card panel">
+                <h3>New Sale</h3>
+                <div id="form-error" class="alert error hidden"></div>
+                <div id="form-success" class="alert success hidden" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;"></div>
+                
+                <form id="sale-form" class="form-grid">
+                    <div style="padding:15px; border:1px solid var(--border-color); border-radius:10px; background:#fafcfa;">
+                        <span style="display:block; margin-bottom:10px; font-weight:600; font-size:0.95rem; color:#374151;">1. Identify Customer</span>
+                        
+                        <div id="customer-search-area">
+                            <label style="display:block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; color: #374151;">Search By:</label>
+                            <div class="search-row" style="display:flex; gap:10px; margin-top:5px; flex-wrap: wrap;">
+                                <select id="searchType" style="flex:1; min-width:140px; padding:0.7rem; border-radius:8px; border:1px solid var(--border-color); font-family:inherit;">
+                                    <option value="Phone Number">Phone Number</option>
+                                    <option value="Aadhaar Number">Aadhaar Number</option>
+                                    <option value="Customer Name">Customer Name</option>
+                                    <option value="Customer ID">Customer ID</option>
+                                </select>
+                                <input type="text" id="searchValue" placeholder="Enter details..." style="flex:2; min-width:180px; padding:0.7rem; border-radius:8px; border:1px solid var(--border-color); font-family:inherit; font-size:1rem;">
+                                <button type="button" class="primary-btn" id="search-customer-btn" style="padding:0 20px; white-space:nowrap;">Search</button>
+                            </div>
+                            <div id="customer-search-results" style="margin-top:10px; font-size:0.9rem;"></div>
+                        </div>
+
+                        <div id="selected-customer-card" class="hidden" style="padding:15px; border:1px solid #c2e0c6; background:#eefaf0; border-radius:8px;">
+                            <strong style="color:var(--primary-color);">Selected Customer:</strong> <span id="sel-cust-name"></span> (<span id="sel-cust-id"></span>)<br>
+                            Phone: <span id="sel-cust-phone"></span><br>
+                            Aadhaar: <span id="sel-cust-aadhaar"></span><br>
+                            <input type="hidden" id="customerId" required>
+                            <button type="button" id="clear-customer-btn" style="margin-top:10px; padding:4px 12px; font-size:0.85rem; background:white; border:1px solid #ccc; border-radius:4px; cursor:pointer;">Change Customer</button>
+                        </div>
+                    </div>
+
+                    <div style="padding:15px; border:1px solid var(--border-color); border-radius:10px; background:#fafcfa;">
+                        <span style="display:block; margin-bottom:10px; font-weight:600; font-size:0.95rem; color:#374151;">2. Sale Details</span>
+                        <div style="display:grid; gap:14px;">
+                            <label>
+                                <span>Product</span>
+                        <select id="productId" required><option value="">Loading...</option></select>
+                        <span id="stockIndicator" class="stock-indicator">Select a product to check stock.</span>
+                    </label>
+                    <label>
+                        <span>Sale Date</span>
+                        <input type="date" id="saleDate" required>
+                    </label>
+                    <label>
+                        <span>Invoice Number</span>
+                        <input type="text" id="invoiceNumber" placeholder="Optional">
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label>
+                            <span>Quantity</span>
+                            <input type="number" id="quantity" min="1" required disabled>
+                        </label>
+                        <label>
+                            <span>Selling Price (₹)</span>
+                            <input type="number" id="sellingPrice" min="0" step="0.01" required>
+                        </label>
+                    </div>
+                    <label>
+                        <span>Total Amount</span>
+                        <span class="total-display" id="totalAmountDisplay">₹0.00</span>
+                    </label>
+                        <label>
+                            <span>Notes</span>
+                            <input type="text" id="notes">
+                        </label>
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button type="submit" class="primary-btn" id="submit-btn" disabled>Record Sale</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card panel">
+                <h3>Sales History</h3>
+                <div class="search-row">
+                    <input type="text" id="search-input" placeholder="Search product, invoice, or customer...">
+                    <select id="customer-filter"><option value="">All Customers</option></select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date / Invoice</th>
+                                <th>Customer & Product</th>
+                                <th>Qty x Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sale-table-body">
+                            <tr><td colspan="4" class="empty-state">Loading sales...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="js/selling.js"></script>
+</body>
+</html>
