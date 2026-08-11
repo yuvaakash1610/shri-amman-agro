@@ -1,58 +1,263 @@
-# Shri Amman Agro Traders 🌾
-**A Complete Inventory & Sales Management System**
-This is a full-stack, responsive web application designed specifically for agro-traders to seamlessly manage day-to-day business operations. It tracks inventory, processes sales and purchases, manages customer/company databases, and provides real-time analytics on stock and revenue.
+# 🌾 Shri Amman Agro Traders — Business Management System
+
+A full-stack web application for managing day-to-day business operations of **Shri Amman Agro Traders**, including inventory, sales, purchases, customers, pricing, and WhatsApp invoice delivery.
+
 ---
-## 🚀 Features
-### 1. 📊 Interactive Dashboard
-- **Live Metrics:** View total products, available stock, total items sold, total purchase value, and total sales revenue.
-- **Visual Analytics:** Beautifully integrated charts (using Chart.js) showing Daily Sales Trends and Monthly Purchases vs. Sales.
-- **Stock Alerts:** Immediate visibility into "Low Stock" and "Out of Stock" products.
-- **Top Sellers:** Automatically calculates and displays the highest-selling products.
-### 2. 👥 Customer & Company Management
-- **Customer Database:** Store customer details (Farmers, Retailers, Wholesalers). 
-- **Secure Searching:** Search customers by Phone Number, Customer ID, Name, or Aadhaar. Aadhaar numbers are securely masked in the UI.
-- **Company Management:** Track partner companies and suppliers.
-### 3. 📦 Product & Stock Management
-- **Product Catalog:** Manage product codes, names, categories, and associate them with companies.
-- **Real-Time Stock Tracking:** View accurate stock levels. The system dynamically tags stock as `IN STOCK`, `LOW STOCK` (< 5 units), or `OUT OF STOCK` (0 units).
-- **Price Management:** Easily update the Buying Price and Selling Price for any product.
-### 4. 🛒 Purchasing & Selling (Transactions)
-- **Purchasing:** Record incoming inventory from suppliers. Automatically **increases** the stock levels of the purchased products.
-- **Selling:** Fast, optimized checkout process. Automatically **decreases** stock levels. Includes real-time stock verification to prevent overselling.
-### 5. 🔒 Security & UX
-- **Authentication:** Secure login portal with JWT (JSON Web Tokens) and password hashing (bcrypt).
-- **Responsive UI:** A clean, modern, and earthy-green aesthetic that works flawlessly on desktops and tablets.
-- **Unified Navigation:** Consistent, horizontally scrolling navigation bar across all modules.
+
+## 📋 Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
+- [Setup & Installation](#setup--installation)
+- [Environment Variables](#environment-variables)
+- [Running the App](#running-the-app)
+- [WhatsApp Integration](#whatsapp-integration)
+- [Known Issues & Fixes](#known-issues--fixes)
+
 ---
-## 🛠️ Technology Stack
-- **Frontend:** HTML5, CSS3 (Custom Design System), Vanilla JavaScript (ES6+), Chart.js
-- **Backend:** Node.js, Express.js
-- **Database:** PostgreSQL (using `pg` Node module)
-- **Security:** `jsonwebtoken`, `bcrypt`, `cors`
+
+## ✨ Features
+
+| Module | Description |
+|---|---|
+| 🔐 **Auth** | Secure login & registration with JWT authentication and bcrypt password hashing |
+| 📊 **Dashboard** | Real-time KPIs — total sales, purchases, customers, revenue, and low-stock alerts |
+| 👥 **Customers** | Add, edit, search, and manage customers with Aadhaar, phone, address, and type |
+| 🏢 **Companies** | Manage supplier/vendor companies with GSTIN, contact, and address details |
+| 📦 **Products** | Full product catalogue with categories, units, HSN codes, and GST rates |
+| 🗄️ **Stock** | Track stock quantities, reorder levels, and full movement history |
+| 💰 **Prices** | Manage product purchase and selling prices with historical price tracking |
+| 🛒 **Purchasing** | Record purchases from suppliers with line items and automatic stock updates |
+| 🧾 **Selling** | Create sales invoices with GST (CGST + SGST) calculation, PDF generation |
+| 📱 **WhatsApp** | Send PDF invoices directly to customers via WhatsApp (QR-code based auth) |
+
 ---
-## ⚙️ Installation & Setup
+
+## 🛠 Tech Stack
+
+### Backend
+- **Runtime**: Node.js v24+
+- **Framework**: Express.js v5
+- **Database**: PostgreSQL (via `pg` driver)
+- **Auth**: JSON Web Tokens (`jsonwebtoken`) + `bcrypt`
+- **WhatsApp**: `whatsapp-web.js` with Puppeteer + `qrcode`
+- **Environment**: `dotenv` / `dotenvx`
+
+### Frontend
+- Vanilla **HTML5**, **CSS3**, **JavaScript**
+- No frameworks — lightweight and fast
+- Pages: Login, Register, Dashboard, Customers, Companies, Products, Stock, Prices, Purchasing, Selling
+
+---
+
+## 📁 Project Structure
+
+```
+shri-amman-agro/
+├── backend/
+│   ├── config/
+│   │   └── db.js                 # PostgreSQL pool & DB schema initialization
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── customerController.js
+│   │   ├── companyController.js
+│   │   ├── productController.js
+│   │   ├── stockController.js
+│   │   ├── priceController.js
+│   │   ├── purchaseController.js
+│   │   ├── saleController.js
+│   │   ├── dashboardController.js
+│   │   └── whatsappController.js
+│   ├── middlewares/
+│   │   └── authMiddleware.js     # JWT authentication middleware
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── customerRoutes.js
+│   │   ├── companyRoutes.js
+│   │   ├── productRoutes.js
+│   │   ├── stockRoutes.js
+│   │   ├── productRoutes.js
+│   │   ├── purchaseRoutes.js
+│   │   ├── saleRoutes.js
+│   │   ├── dashboardRoutes.js
+│   │   └── whatsappRoutes.js
+│   ├── services/
+│   │   └── whatsappService.js    # WhatsApp client lifecycle & PDF delivery
+│   ├── seed.js                   # Optional DB seed script
+│   └── server.js                 # Entry point — Express app & route wiring
+├── frontend/
+│   ├── css/                      # Stylesheets
+│   ├── js/                       # Page-specific JavaScript modules
+│   │   ├── login.js
+│   │   ├── register.js
+│   │   ├── dashboard.js
+│   │   ├── customers.js
+│   │   ├── companies.js
+│   │   ├── products.js
+│   │   ├── stock.js
+│   │   ├── prices.js
+│   │   ├── purchasing.js
+│   │   └── selling.js
+│   ├── images/
+│   ├── index.html                # Login page
+│   ├── register.html
+│   ├── dashboard.html
+│   ├── customers.html
+│   ├── companies.html
+│   ├── products.html
+│   ├── stock.html
+│   ├── prices.html
+│   ├── purchasing.html
+│   └── selling.html
+├── .env                          # Environment variables (not committed)
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+---
+
+## 🗃 Database Schema
+
+The database is auto-initialized on server start via `initializeDatabase()`. Tables created:
+
+| Table | Description |
+|---|---|
+| `users` | App users with roles: Admin, Manager, Staff |
+| `customers` | Customer records with Aadhaar, phone, type |
+| `companies` | Supplier companies with GSTIN |
+| `categories` | Product categories |
+| `units` | Units of measurement (kg, litre, bag, etc.) |
+| `products` | Products linked to company, category, unit; includes HSN & GST rate |
+| `stock` | Current stock quantity and reorder level per product |
+| `stock_movements` | Audit log of all stock in/out movements |
+| `product_prices` | Purchase & selling price history with active flag |
+| `purchases` | Purchase orders with company, date, invoice number |
+| `purchase_items` | Line items per purchase |
+| `sales` | Sales invoices with customer, date, invoice number |
+| `sale_items` | Line items per sale, including CGST & SGST amounts |
+
+---
+
+## 🔌 API Endpoints
+
+All API routes are prefixed with `/api`. Protected routes require a `Bearer <token>` in the `Authorization` header.
+
+### Auth
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/login` | ❌ | Login — returns JWT |
+| POST | `/api/auth/register` | ❌ | Register new user |
+
+### Customers
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/customers` | ✅ | List all customers |
+| GET | `/api/customers/:id` | ✅ | Get customer by ID |
+| POST | `/api/customers` | ✅ | Create customer |
+| PUT | `/api/customers/:id` | ✅ | Update customer |
+| DELETE | `/api/customers/:id` | ✅ | Delete customer |
+
+### Companies
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/companies` | ✅ | List all companies |
+| GET | `/api/companies/:id` | ✅ | Get company by ID |
+| POST | `/api/companies` | ✅ | Create company |
+| PUT | `/api/companies/:id` | ✅ | Update company |
+| DELETE | `/api/companies/:id` | ✅ | Delete company |
+
+### Products
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/products` | ✅ | List all products |
+| GET | `/api/products/:id` | ✅ | Get product |
+| POST | `/api/products` | ✅ | Create product |
+| PUT | `/api/products/:id` | ✅ | Update product |
+| DELETE | `/api/products/:id` | ✅ | Delete product |
+| GET | `/api/products/categories` | ✅ | List categories |
+| POST | `/api/products/categories` | ✅ | Create category |
+| GET | `/api/products/units` | ✅ | List units |
+| POST | `/api/products/units` | ✅ | Create unit |
+
+### Stock
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/stock` | ✅ | List all stock levels |
+| GET | `/api/stock/:productId` | ✅ | Get stock for a product |
+| PUT | `/api/stock/:productId` | ✅ | Update stock quantity |
+| POST | `/api/stock/movement` | ✅ | Record a manual stock movement |
+| GET | `/api/stock/:productId/movements` | ✅ | Get movement history |
+
+### Prices
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/prices` | ✅ | List current prices |
+| GET | `/api/prices/:productId` | ✅ | Get prices for product |
+| POST | `/api/prices` | ✅ | Set new price |
+| PUT | `/api/prices/:id` | ✅ | Update price entry |
+| GET | `/api/prices/:productId/history` | ✅ | Price history |
+
+### Purchases
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/purchases` | ✅ | List all purchases |
+| GET | `/api/purchases/:id` | ✅ | Get purchase detail |
+| POST | `/api/purchases` | ✅ | Create purchase |
+| DELETE | `/api/purchases/:id` | ✅ | Delete purchase |
+
+### Sales
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/sales` | ✅ | List all sales |
+| GET | `/api/sales/:id` | ✅ | Get sale detail |
+| POST | `/api/sales` | ✅ | Create sale invoice |
+| DELETE | `/api/sales/:id` | ✅ | Delete sale |
+
+### Dashboard
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/dashboard/stats` | ✅ | Summary KPIs |
+| GET | `/api/dashboard/low-stock` | ✅ | Low stock alerts |
+| GET | `/api/dashboard/recent-sales` | ✅ | Recent sales list |
+| GET | `/api/dashboard/recent-purchases` | ✅ | Recent purchases list |
+
+### WhatsApp
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/whatsapp/status` | ✅ | WhatsApp connection status + QR code |
+| POST | `/api/whatsapp/send-document` | ✅ | Send PDF invoice to a phone number |
+
+---
+
+## ⚙️ Setup & Installation
+
 ### Prerequisites
-1. **Node.js** (v14 or higher)
-2. **PostgreSQL** (v12 or higher)
-### 1. Clone & Install Dependencies
-Navigate to the project folder and install the required Node.js packages:
+
+- [Node.js](https://nodejs.org/) v18 or higher (v24 recommended)
+- [PostgreSQL](https://www.postgresql.org/) v14 or higher
+- A WhatsApp account for invoice delivery (optional)
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd shri-amman-agro
+```
+
+### 2. Install dependencies
+
 ```bash
 npm install
 ```
-### 2. Database Setup
-1. Open PostgreSQL (pgAdmin or psql command line).
-2. Create a new database (e.g., `shri_amman_agro`).
-3. Execute the SQL schema (located in your database setup file or generated via backend scripts) to create the following tables:
-   - `users`
-   - `customers`
-   - `companies`
-   - `products`
-   - `stock`
-   - `prices`
-   - `purchases` & `purchase_items`
-   - `sales` & `sale_items`
-### 3. Environment Variables
-Create a `.env` file in the root directory (or use the existing one) and configure the following:
+
+### 3. Configure environment variables
+
+Create a `.env` file in the project root:
+
 ```env
 PORT=3000
 DB_USER=postgres
@@ -60,57 +265,68 @@ DB_PASSWORD=your_db_password
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=shri_amman_agro
-JWT_SECRET=your_super_secret_jwt_key
+JWT_SECRET=your_super_secret_key_change_this
 ```
-### 4. Start the Application
-Run the backend server:
+
+### 4. Create the PostgreSQL database
+
+```sql
+CREATE DATABASE shri_amman_agro;
+```
+
+> The tables and schema are auto-created on first server start — no manual migrations needed.
+
+---
+
+## ▶️ Running the App
+
 ```bash
 npm start
 ```
-*The server will start on `http://localhost:3000` (or the port defined in your `.env`).*
-Open `frontend/index.html` in your browser (or access it via your local server if statically served) to access the Login page.
+
+The server starts on [http://localhost:3000](http://localhost:3000).
+
+- **Login Page**: `http://localhost:3000`
+- **Dashboard**: `http://localhost:3000/dashboard.html`
+
 ---
-## 📂 Project Structure
-```text
-shri-amman-agro/
-│
-├── backend/
-│   ├── controllers/      # Business logic (sales, products, dashboard, etc.)
-│   ├── middleware/       # JWT Authentication middleware
-│   ├── routes/           # Express API route definitions
-│   ├── db.js             # PostgreSQL connection pool setup
-│   └── server.js         # Entry point for the Express server
-│
-├── frontend/
-│   ├── css/
-│   │   └── style.css     # Global UI styling and variables
-│   ├── js/               # Frontend logic for each respective HTML page
-│   ├── index.html        # Login Page
-│   ├── dashboard.html    # Main Analytics Dashboard
-│   ├── selling.html      # Point of Sale UI
-│   ├── purchasing.html   # Purchase Entry UI
-│   └── ...               # (customers, stock, products, companies, prices)
-│
-├── package.json          # Node dependencies and scripts
-└── .env                  # Environment configuration
-```
+
+## 📱 WhatsApp Integration
+
+The app uses `whatsapp-web.js` to send PDF invoices directly to customers.
+
+### First-time setup
+
+1. Start the server with `npm start`
+2. Open the Dashboard → look for the **WhatsApp Status** card
+3. Scan the QR code with your WhatsApp mobile app
+4. Once connected, invoices can be sent from the **Selling** page
+
+### Session persistence
+
+- WhatsApp session is saved to `.wwebjs_auth/session-saat-agro/`
+- On subsequent restarts, WhatsApp reconnects automatically without re-scanning
+- If the session expires, a fresh QR code appears on the Dashboard
+
+> **Note**: `.wwebjs_auth/` is listed in `.gitignore` and should never be committed.
+
 ---
-## 🛡️ API Endpoints (Brief Overview)
-- **Auth:** `POST /api/auth/login`
-- **Dashboard:** `GET /api/dashboard/stats`, `GET /api/dashboard/sales-trend`, `GET /api/dashboard/purchase-vs-sales`
-- **Products:** `GET /api/products`, `POST /api/products`, `PUT /api/products/:id`
-- **Stock:** `GET /api/stock`, `GET /api/stock/:productId`
-- **Sales:** `POST /api/sales`, `GET /api/sales`
-- **Purchases:** `POST /api/purchases`, `GET /api/purchases`
-- **Customers:** `GET /api/customers`, `POST /api/customers/search`
+
+## 🐛 Known Issues & Fixes
+
+### `EBUSY: resource busy or locked` on Windows startup
+
+**Symptom**: Server crashes on start with an error pointing to `LocalAuth.js` trying to delete a file like `first_party_sets.db`.
+
+**Cause**: Windows holds file handles open when Puppeteer/Chrome closes. The `LocalAuth.logout()` method tries to immediately delete the session folder while files are still locked.
+
+**Fix applied in `whatsappService.js`**:
+- `LocalAuth.logout()` is wrapped to catch `EBUSY`/`EPERM` errors instead of crashing
+- A 2-second delayed cleanup (`clearSessionDir`) runs after logout/auth-failure to allow Chrome to fully release file handles
+- `rmMaxRetries: 10` is set on `LocalAuth` for extra resilience
+
 ---
-## 💡 Usage Workflow
-1. **Login:** Use administrator credentials to log in.
-2. **Setup Base Data:** Add Companies, then add Products.
-3. **Manage Prices:** Set the Buying and Selling prices in the Price Management tab.
-4. **Initial Stock:** Record incoming inventory via the **Purchasing** tab to establish stock.
-5. **Start Selling:** Use the **Selling** tab to check out customers, automatically updating stock levels and dashboard revenue.
----
-*Designed & Developed for Shri Amman Agro Traders.*
-# shri-amman-agro
-Shri
+
+## 📄 License
+
+ISC — Internal use for Shri Amman Agro Traders.
