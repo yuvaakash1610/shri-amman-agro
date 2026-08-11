@@ -76,7 +76,7 @@ const listProducts = async (req, res) => {
     const conditions = [];
     let query = `
       SELECT p.product_id, p.product_code, p.product_name, p.company_id, c.company_name, p.category_id, cat.category_name, p.unit_id, u.unit_name, u.abbreviation,
-             p.description, p.status, p.created_at
+             p.description, p.status, p.created_at, p.hsn_code, p.gst_rate
       FROM products p
       LEFT JOIN companies c ON c.company_id = p.company_id
       LEFT JOIN categories cat ON cat.category_id = p.category_id
@@ -125,7 +125,7 @@ const getProduct = async (req, res) => {
 
     const result = await db.query(
       `SELECT p.product_id, p.product_code, p.product_name, p.company_id, c.company_name, p.category_id, cat.category_name, p.unit_id, u.unit_name, u.abbreviation,
-              p.description, p.status, p.created_at
+              p.description, p.status, p.created_at, p.hsn_code, p.gst_rate
        FROM products p
        LEFT JOIN companies c ON c.company_id = p.company_id
        LEFT JOIN categories cat ON cat.category_id = p.category_id
@@ -144,7 +144,7 @@ const getProduct = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { productName, companyId, categoryId, unitId, description, status } = req.body;
+    const { productName, companyId, categoryId, unitId, description, status, hsnCode, gstRate } = req.body;
     if (!productName || !companyId || !categoryId || !unitId) {
       return res.status(400).json({ message: 'Product name, company, category, and unit are required.' });
     }
@@ -152,10 +152,10 @@ const createProduct = async (req, res) => {
     const productCode = await generateProductCode();
 
     const result = await db.query(
-      `INSERT INTO products (product_code, product_name, company_id, category_id, unit_id, description, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING product_id, product_code, product_name, company_id, category_id, unit_id, description, status, created_at`,
-      [productCode, productName.trim(), companyId, categoryId, unitId, description ? description.trim() : null, status || 'Active']
+      `INSERT INTO products (product_code, product_name, company_id, category_id, unit_id, description, status, hsn_code, gst_rate)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING product_id, product_code, product_name, company_id, category_id, unit_id, description, status, created_at, hsn_code, gst_rate`,
+      [productCode, productName.trim(), companyId, categoryId, unitId, description ? description.trim() : null, status || 'Active', hsnCode ? hsnCode.trim() : null, parseFloat(gstRate) || 0]
     );
 
     res.status(201).json(result.rows[0]);
@@ -169,7 +169,7 @@ const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const numericId = Number.parseInt(id, 10);
-    const { productName, companyId, categoryId, unitId, description, status } = req.body;
+    const { productName, companyId, categoryId, unitId, description, status, hsnCode, gstRate } = req.body;
 
     if (Number.isNaN(numericId)) return res.status(400).json({ message: 'Invalid product ID.' });
     if (!productName || !companyId || !categoryId || !unitId) {
@@ -183,10 +183,12 @@ const updateProduct = async (req, res) => {
            category_id = $3,
            unit_id = $4,
            description = $5,
-           status = $6
-       WHERE product_id = $7::int
-       RETURNING product_id, product_code, product_name, company_id, category_id, unit_id, description, status, created_at`,
-      [productName.trim(), companyId, categoryId, unitId, description ? description.trim() : null, status || 'Active', numericId]
+           status = $6,
+           hsn_code = $7,
+           gst_rate = $8
+       WHERE product_id = $9::int
+       RETURNING product_id, product_code, product_name, company_id, category_id, unit_id, description, status, created_at, hsn_code, gst_rate`,
+      [productName.trim(), companyId, categoryId, unitId, description ? description.trim() : null, status || 'Active', hsnCode ? hsnCode.trim() : null, parseFloat(gstRate) || 0, numericId]
     );
 
     if (result.rows.length === 0) return res.status(404).json({ message: 'Product not found.' });

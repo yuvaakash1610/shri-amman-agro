@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderNav = () => {
         const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        topNav.innerHTML = navItems.map((item) => {
+        topNav.innerHTML = `<div class="navbar-brand" style="display:flex; align-items:center; gap:8px;"><img src="images/logo.png" style="height:32px; width:32px; object-fit:contain;"> Shri Amman Agro</div>` + navItems.map((item) => {
             const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
             const isLogout = item.label === 'Logout';
             return `<a class="nav-link${isActive ? ' active' : ''}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
@@ -114,6 +114,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${product.company_name || '—'}</td>
                 <td>${product.category_name || '—'}</td>
                 <td>${product.unit_name || '—'} (${product.abbreviation || ''})</td>
+                <td><span style="font-size:0.85rem; background:#eef7ef; color:#2F6B38; padding:2px 6px; border-radius:4px; font-weight:600;">${product.hsn_code || '—'}</span></td>
+                <td><span style="font-size:0.85rem; background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-weight:600;">${product.gst_rate || 0}%</span></td>
                 <td>${product.status || 'Active'}</td>
                 <td class="actions">
                     <button class="edit-btn" data-id="${product.product_id}" type="button">Edit</button>
@@ -158,6 +160,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             unitId: document.getElementById('unitId').value,
             description: document.getElementById('description').value.trim(),
             status: document.getElementById('status').value,
+            hsnCode: document.getElementById('hsnCode').value.trim(),
+            gstRate: document.getElementById('gstRate').value,
         };
 
         if (!payload.productName || !payload.companyId || !payload.categoryId || !payload.unitId) {
@@ -239,6 +243,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('unitId').value = product.unit_id || '';
         document.getElementById('description').value = product.description || '';
         document.getElementById('status').value = product.status || 'Active';
+        document.getElementById('hsnCode').value = product.hsn_code || '';
+        document.getElementById('gstRate').value = String(product.gst_rate || 0);
         setFormMode(true);
         clearError();
         window.scrollTo({ top: 0, behavior: 'smooth' });

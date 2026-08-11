@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderNav = () => {
         const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        topNav.innerHTML = navItems.map((item) => {
+        topNav.innerHTML = `<div class="navbar-brand" style="display:flex; align-items:center; gap:8px;"><img src="images/logo.png" style="height:32px; width:32px; object-fit:contain;"> Shri Amman Agro</div>` + navItems.map((item) => {
             const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
             const isLogout = item.label === 'Logout';
             const classes = `nav-link${isActive ? ' active' : ''}`;

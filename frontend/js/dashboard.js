@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const renderNav = () => {
         const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
         
-        topNav.innerHTML = `<div class="navbar-brand">🌾 Shri Amman Agro</div>` + 
+        topNav.innerHTML = `<div class="navbar-brand" style="display:flex; align-items:center; gap:8px;"><img src="images/logo.png" style="height:32px; width:32px; object-fit:contain;"> Shri Amman Agro</div>` + 
         navItems.map((item) => {
             const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
             const isLogout = item.label === 'Logout';
@@ -68,8 +68,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
     };
 
-    const renderStats = (stats) => {
+    const renderStats = (stats, profitData = null) => {
         const grid = document.getElementById('stats-grid');
+        
+        const todayProf = (profitData && profitData.today) ? profitData.today.profit : 0;
+        const todayMargin = (profitData && profitData.today) ? profitData.today.margin : 0;
+        const monthProf = (profitData && profitData.month) ? profitData.month.profit : 0;
+        const monthMargin = (profitData && profitData.month) ? profitData.month.margin : 0;
+        const totalProf = (profitData && profitData.total) ? profitData.total.profit : 0;
+        const totalMargin = (profitData && profitData.total) ? profitData.total.margin : 0;
+
         grid.innerHTML = `
             <div class="stat-card">
                 <div class="stat-icon">📦</div>
@@ -106,6 +114,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="stat-label">Sales Value</div>
                 <div class="stat-value money">${formatCurrency(stats.totalSalesValue)}</div>
             </div>
+            <div class="stat-card success" style="border-top: 4px solid #10B981;">
+                <div class="stat-icon">💵</div>
+                <div class="stat-label">Today's Profit</div>
+                <div class="stat-value money" style="color:#065f46">${formatCurrency(todayProf)}</div>
+                <div class="stat-sub">Margin: <strong>${todayMargin}%</strong></div>
+            </div>
+            <div class="stat-card success" style="border-top: 4px solid #2F6B38;">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">This Month's Profit</div>
+                <div class="stat-value money" style="color:#2F6B38">${formatCurrency(monthProf)}</div>
+                <div class="stat-sub">Margin: <strong>${monthMargin}%</strong></div>
+            </div>
+            <div class="stat-card accent" style="border-top: 4px solid #E2B93B;">
+                <div class="stat-icon">🌟</div>
+                <div class="stat-label">Overall Profit</div>
+                <div class="stat-value money" style="color:#92400e">${formatCurrency(totalProf)}</div>
+                <div class="stat-sub">Margin: <strong>${totalMargin}%</strong></div>
+            </div>
         `;
     };
 
@@ -130,19 +156,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderStats(stats);
 
             // Fetch chart & table data in parallel
-            const [stockRes, pvRes, topRes, trendRes, lowStockRes] = await Promise.all([
+            const [stockRes, pvRes, topRes, trendRes, lowStockRes, profitRes] = await Promise.all([
                 fetch(`${apiBaseUrl}/api/dashboard/stock-by-product`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${apiBaseUrl}/api/dashboard/purchase-vs-sales`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${apiBaseUrl}/api/dashboard/top-selling`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${apiBaseUrl}/api/dashboard/sales-trend`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${apiBaseUrl}/api/dashboard/low-stock`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${apiBaseUrl}/api/dashboard/low-stock`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${apiBaseUrl}/api/dashboard/profit-analytics`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
-            const stockData = await stockRes.json();
-            const pvData = await pvRes.json();
-            const topData = await topRes.json();
-            const trendData = await trendRes.json();
-            const lowStockData = await lowStockRes.json();
+            const stockData = stockRes.ok ? await stockRes.json() : [];
+            const pvData = pvRes.ok ? await pvRes.json() : { months: [], purchases: [], sales: [] };
+            const topData = topRes.ok ? await topRes.json() : [];
+            const trendData = trendRes.ok ? await trendRes.json() : [];
+            const lowStockData = lowStockRes.ok ? await lowStockRes.json() : [];
+            const profitData = profitRes.ok ? await profitRes.json() : null;
+
+            // Re-render stats cards with profit figures
+            renderStats(stats, profitData);
 
             // 1. Stock Chart (Doughnut)
             if (stockData.length > 0) {
@@ -231,6 +262,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 lowBody.innerHTML = '<tr><td colspan="5" class="empty-state">All products are well stocked! 🎉</td></tr>';
             }
 
+            // Render Product Profitability Table
+            const profitBody = document.getElementById('product-profit-body');
+            if (profitData && profitData.products && profitData.products.length > 0) {
+                profitBody.innerHTML = profitData.products.map(p => {
+                    const m = p.margin;
+                    let pillClass = 'low-stock';
+                    if (m >= 20) pillClass = 'in-stock';
+                    else if (m < 0) pillClass = 'out-stock';
+
+                    return `
+                        <tr>
+                            <td><strong>${p.product_name}</strong><br><small style="color:#6B7280">${p.product_code}</small></td>
+                            <td>${p.category_name || '-'}</td>
+                            <td>${p.total_sold}</td>
+                            <td>${formatCurrency(p.total_revenue)}</td>
+                            <td>${formatCurrency(p.total_cost)}</td>
+                            <td style="font-weight: 600; color: ${p.total_profit >= 0 ? '#10B981' : '#EF4444'}">${formatCurrency(p.total_profit)}</td>
+                            <td><span class="pill ${pillClass}">${m}%</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                profitBody.innerHTML = '<tr><td colspan="7" class="empty-state">No profit data available yet. Record some sales to see profitability!</td></tr>';
+            }
+
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
             if (error.message === 'Authentication failed') {
@@ -242,5 +298,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    const checkWhatsAppStatus = async () => {
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/whatsapp/status`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            
+            const statusText = document.getElementById('wa-status-text');
+            const qrContainer = document.getElementById('wa-qr-container');
+            const qrImg = document.getElementById('wa-qr-img');
+            const refreshBtn = document.getElementById('wa-refresh-btn');
+            
+            if (data.ready) {
+                statusText.innerHTML = '<span style="color: #10B981;">✅ Linked and Ready</span>';
+                qrContainer.style.display = 'none';
+                refreshBtn.style.display = 'none';
+            } else if (data.qr) {
+                statusText.innerHTML = '<span style="color: #F59E0B;">⚠️ Scan QR Code</span>';
+                qrImg.src = data.qr;
+                qrContainer.style.display = 'block';
+                refreshBtn.style.display = 'inline-block';
+            } else {
+                statusText.innerHTML = '<span style="color: #6B7280;">⏳ Initializing WhatsApp...</span>';
+                qrContainer.style.display = 'none';
+                refreshBtn.style.display = 'inline-block';
+            }
+        } catch (error) {
+            console.error('Error checking WA status:', error);
+            document.getElementById('wa-status-text').innerHTML = '<span style="color: #EF4444;">❌ WhatsApp Service Offline</span>';
+        }
+    };
+
+    document.getElementById('wa-refresh-btn').addEventListener('click', checkWhatsAppStatus);
+
     fetchDashboardData();
+    checkWhatsAppStatus();
+
+    // Auto refresh WA status every 5 seconds if not ready
+    setInterval(() => {
+        if (document.getElementById('wa-status-text').innerText.includes('Scan') || 
+            document.getElementById('wa-status-text').innerText.includes('Initializing')) {
+            checkWhatsAppStatus();
+        }
+    }, 5000);
 });

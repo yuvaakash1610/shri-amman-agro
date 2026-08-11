@@ -169,6 +169,103 @@ const getPurchaseVsSales = async (req, res) => {
   }
 };
 
+const getProfitAnalytics = async (req, res) => {
+  try {
+    const unitCostExpr = `COALESCE(
+      pp.purchase_price,
+      (SELECT pi.purchase_price FROM purchase_items pi WHERE pi.product_id = si.product_id ORDER BY pi.purchase_item_id DESC LIMIT 1),
+      0
+    )`;
+
+    const productUnitCostExpr = `COALESCE(
+      pp.purchase_price,
+      (SELECT pi.purchase_price FROM purchase_items pi WHERE pi.product_id = pr.product_id ORDER BY pi.purchase_item_id DESC LIMIT 1),
+      0
+    )`;
+
+    const [todayResult, monthResult, totalResult, productProfitResult] = await Promise.all([
+      // Today Profit
+      db.query(`
+        SELECT 
+          COALESCE(SUM(si.total_amount), 0) AS revenue,
+          COALESCE(SUM(si.quantity * ${unitCostExpr}), 0) AS cost,
+          COALESCE(SUM(si.total_amount - (si.quantity * ${unitCostExpr})), 0) AS profit
+        FROM sales s
+        JOIN sale_items si ON si.sale_id = s.sale_id
+        LEFT JOIN product_prices pp ON pp.product_id = si.product_id AND pp.is_active = true
+        WHERE s.sale_date = CURRENT_DATE
+      `),
+      // Current Month Profit
+      db.query(`
+        SELECT 
+          COALESCE(SUM(si.total_amount), 0) AS revenue,
+          COALESCE(SUM(si.quantity * ${unitCostExpr}), 0) AS cost,
+          COALESCE(SUM(si.total_amount - (si.quantity * ${unitCostExpr})), 0) AS profit
+        FROM sales s
+        JOIN sale_items si ON si.sale_id = s.sale_id
+        LEFT JOIN product_prices pp ON pp.product_id = si.product_id AND pp.is_active = true
+        WHERE DATE_TRUNC('month', s.sale_date) = DATE_TRUNC('month', CURRENT_DATE)
+      `),
+      // Overall Total Profit
+      db.query(`
+        SELECT 
+          COALESCE(SUM(si.total_amount), 0) AS revenue,
+          COALESCE(SUM(si.quantity * ${unitCostExpr}), 0) AS cost,
+          COALESCE(SUM(si.total_amount - (si.quantity * ${unitCostExpr})), 0) AS profit
+        FROM sales s
+        JOIN sale_items si ON si.sale_id = s.sale_id
+        LEFT JOIN product_prices pp ON pp.product_id = si.product_id AND pp.is_active = true
+      `),
+      // Profitability per product
+      db.query(`
+        SELECT 
+          pr.product_id, pr.product_name, pr.product_code, cat.category_name,
+          COALESCE(SUM(si.quantity), 0) AS total_sold,
+          COALESCE(SUM(si.total_amount), 0) AS total_revenue,
+          COALESCE(SUM(si.quantity * ${productUnitCostExpr}), 0) AS total_cost,
+          COALESCE(SUM(si.total_amount - (si.quantity * ${productUnitCostExpr})), 0) AS total_profit
+        FROM products pr
+        LEFT JOIN sale_items si ON si.product_id = pr.product_id
+        LEFT JOIN categories cat ON cat.category_id = pr.category_id
+        LEFT JOIN product_prices pp ON pp.product_id = pr.product_id AND pp.is_active = true
+        GROUP BY pr.product_id, pr.product_name, pr.product_code, cat.category_name, pp.purchase_price
+        HAVING COALESCE(SUM(si.quantity), 0) > 0
+        ORDER BY total_profit DESC
+      `)
+    ]);
+
+    const formatMetrics = (row) => {
+      const revenue = Number(row.revenue);
+      const cost = Number(row.cost);
+      const profit = Number(row.profit);
+      const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0.0';
+      return { revenue, cost, profit, margin: Number(margin) };
+    };
+
+    res.json({
+      today: formatMetrics(todayResult.rows[0]),
+      month: formatMetrics(monthResult.rows[0]),
+      total: formatMetrics(totalResult.rows[0]),
+      products: productProfitResult.rows.map(p => {
+        const rev = Number(p.total_revenue);
+        const prof = Number(p.total_profit);
+        const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
+        return {
+          ...p,
+          total_sold: Number(p.total_sold),
+          total_revenue: rev,
+          total_cost: Number(p.total_cost),
+          total_profit: prof,
+          margin: Number(margin)
+        };
+      })
+    });
+  } catch (error) {
+    console.error('Profit analytics error:', error);
+    res.status(500).json({ message: 'Failed to load profit analytics.' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getTopSellingProducts,
@@ -176,4 +273,6 @@ module.exports = {
   getStockByProduct,
   getSalesTrend,
   getPurchaseVsSales,
+  getProfitAnalytics,
 };
+

@@ -1,55 +1,70 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'index.html';
-        return;
-    }
+    if (!token) { window.location.href = 'index.html'; return; }
 
-    const form = document.getElementById('sale-form');
-    const tableBody = document.getElementById('sale-table-body');
-    const searchInput = document.getElementById('search-input');
+    // ── DOM Refs ──────────────────────────────────────────────────────────────
+    const tableBody     = document.getElementById('sale-table-body');
+    const searchInput   = document.getElementById('search-input');
     const customerFilter = document.getElementById('customer-filter');
-    const formError = document.getElementById('form-error');
-    const formSuccess = document.getElementById('form-success');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    // Customer Search UI
-    const searchType = document.getElementById('searchType');
-    const searchValue = document.getElementById('searchValue');
-    const searchCustomerBtn = document.getElementById('search-customer-btn');
+    const formError     = document.getElementById('form-error');
+    const formSuccess   = document.getElementById('form-success');
+    const submitSaleBtn = document.getElementById('submit-sale-btn');
+    const topNav        = document.getElementById('top-nav');
+
+    // Customer search
+    const searchType          = document.getElementById('searchType');
+    const searchValue         = document.getElementById('searchValue');
+    const searchCustomerBtn   = document.getElementById('search-customer-btn');
     const customerSearchResults = document.getElementById('customer-search-results');
-    const customerSearchArea = document.getElementById('customer-search-area');
+    const customerSearchArea  = document.getElementById('customer-search-area');
     const selectedCustomerCard = document.getElementById('selected-customer-card');
-    const clearCustomerBtn = document.getElementById('clear-customer-btn');
-    
-    // Selected Customer Fields
-    const customerSelect = document.getElementById('customerId'); // hidden input now
-    const selCustName = document.getElementById('sel-cust-name');
-    const selCustId = document.getElementById('sel-cust-id');
-    const selCustPhone = document.getElementById('sel-cust-phone');
-    const selCustAadhaar = document.getElementById('sel-cust-aadhaar');
+    const clearCustomerBtn    = document.getElementById('clear-customer-btn');
+    const customerIdInput     = document.getElementById('customerId');
+    const selCustName         = document.getElementById('sel-cust-name');
+    const selCustPhone        = document.getElementById('sel-cust-phone');
 
+    // Cart inputs
+    const cartProductSelect   = document.getElementById('cartProductId');
+    const cartStockIndicator  = document.getElementById('cartStockIndicator');
+    const cartQtyInput        = document.getElementById('cartQty');
+    const cartPriceInput      = document.getElementById('cartPrice');
+    const cartGstSelect       = document.getElementById('cartGst');
+    const addToCartBtn        = document.getElementById('add-to-cart-btn');
 
-    // Sale Details Fields
-    const productSelect = document.getElementById('productId');
-    const stockIndicator = document.getElementById('stockIndicator');
-    const qtyInput = document.getElementById('quantity');
-    const priceInput = document.getElementById('sellingPrice');
-    const totalDisplay = document.getElementById('totalAmountDisplay');
-    const topNav = document.getElementById('top-nav');
+    // Cart UI
+    const cartEmpty           = document.getElementById('cart-empty');
+    const cartTableWrap       = document.getElementById('cart-table-wrap');
+    const cartTbody           = document.getElementById('cart-tbody');
+    const cartSummary         = document.getElementById('cart-summary');
+    const cartCountBadge      = document.getElementById('cart-count-badge');
 
+    // ── State ─────────────────────────────────────────────────────────────────
+    let cartItems       = [];      // { productId, productName, productCode, hsnCode, quantity, sellingPrice, gstRate, cgst, sgst, lineTotal }
+    let productMap      = {};      // productId -> product object (with stock, price, gstRate, hsnCode)
+    let currentSalesData = [];
+
+    // ── API Base ──────────────────────────────────────────────────────────────
     const getApiBaseUrl = () => {
-        const configuredApiBase = (window.__API_BASE_URL__ || '').replace(/\/$/, '');
-        if (configuredApiBase) return configuredApiBase;
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const cfg = (window.__API_BASE_URL__ || '').replace(/\/$/, '');
+        if (cfg) return cfg;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             return `${window.location.protocol}//${window.location.hostname}:3000`;
-        }
         return window.location.origin;
     };
-
     const apiBaseUrl = getApiBaseUrl();
-    document.getElementById('saleDate').valueAsDate = new Date();
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    const fmt = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+
+    const showMsg = (msg, isError = false) => {
+        formError.classList.add('hidden');
+        formSuccess.classList.add('hidden');
+        if (!msg) return;
+        if (isError) { formError.textContent = msg; formError.classList.remove('hidden'); }
+        else { formSuccess.textContent = msg; formSuccess.classList.remove('hidden'); setTimeout(() => formSuccess.classList.add('hidden'), 5000); }
+    };
+
+    // ── Navbar ────────────────────────────────────────────────────────────────
     const navItems = [
         { label: 'Dashboard', href: 'dashboard.html' },
         { label: 'Customers', href: 'customers.html' },
@@ -61,308 +76,505 @@ document.addEventListener('DOMContentLoaded', async () => {
         { label: 'Price Management', href: 'prices.html' },
         { label: 'Logout', href: '#' }
     ];
-
     const renderNav = () => {
         const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        topNav.innerHTML = navItems.map((item) => {
-            const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
-            const isLogout = item.label === 'Logout';
-            return `<a class="nav-link${isActive ? ' active' : ''}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
-        }).join('');
+        topNav.innerHTML = `<div class="navbar-brand" style="display:flex;align-items:center;gap:8px;"><img src="images/logo.png" style="height:32px;width:32px;object-fit:contain;"> Shri Amman Agro</div>` +
+            navItems.map(item => {
+                const isActive = currentPage === item.href;
+                const isLogout = item.label === 'Logout';
+                return `<a class="nav-link${isActive ? ' active' : ''}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
+            }).join('');
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
-    };
-
-    const calculateTotal = () => {
-        const q = parseFloat(qtyInput.value) || 0;
-        const p = parseFloat(priceInput.value) || 0;
-        totalDisplay.textContent = formatCurrency(q * p);
-    };
-
-    qtyInput.addEventListener('input', calculateTotal);
-    priceInput.addEventListener('input', calculateTotal);
-
-    const showMsg = (msg, isError = false) => {
-        formError.classList.add('hidden');
-        formSuccess.classList.add('hidden');
-        if (isError) {
-            formError.textContent = msg;
-            formError.classList.remove('hidden');
-        } else {
-            formSuccess.textContent = msg;
-            formSuccess.classList.remove('hidden');
-            setTimeout(() => formSuccess.classList.add('hidden'), 5000);
-        }
-    };
-
+    // ── Load Form Data ────────────────────────────────────────────────────────
     const loadFormData = async () => {
         try {
             const [custRes, prodRes] = await Promise.all([
                 fetch(`${apiBaseUrl}/api/customers`, { headers: { Authorization: `Bearer ${token}` } }),
                 fetch(`${apiBaseUrl}/api/products`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
-            
             if (custRes.ok) {
                 const customers = await custRes.json();
-                customerFilter.innerHTML = '<option value="">All Customers</option>' + customers.map(c => `<option value="${c.id}">${c.customer_name}</option>`).join('');
+                customerFilter.innerHTML = '<option value="">All Customers</option>' +
+                    customers.map(c => `<option value="${c.id}">${c.customer_name}</option>`).join('');
             }
             if (prodRes.ok) {
                 const products = await prodRes.json();
-                productSelect.innerHTML = '<option value="">Select Product</option>' + products.map(p => `<option value="${p.product_id}">${p.product_name} (${p.product_code})</option>`).join('');
+                products.forEach(p => { productMap[p.product_id] = p; });
+                cartProductSelect.innerHTML = '<option value="">Select product...</option>' +
+                    products.map(p => `<option value="${p.product_id}">${p.product_name} (${p.product_code})</option>`).join('');
             }
-        } catch (error) {
-            showMsg('Failed to load products/customers.', true);
-        }
+        } catch { showMsg('Failed to load products/customers.', true); }
     };
 
-    // --- Customer Search & Selection ---
+    // ── Set today's date ──────────────────────────────────────────────────────
+    document.getElementById('saleDate').valueAsDate = new Date();
 
+    // ── Customer Search ───────────────────────────────────────────────────────
     searchCustomerBtn.addEventListener('click', async () => {
         const type = searchType.value;
-        const val = searchValue.value.trim();
-        if (!val) {
-            customerSearchResults.innerHTML = '<span style="color:red">Please enter search value.</span>';
-            return;
-        }
-
+        const val  = searchValue.value.trim();
+        if (!val) { customerSearchResults.innerHTML = '<span style="color:red">Please enter a search value.</span>'; return; }
         customerSearchResults.innerHTML = 'Searching...';
         try {
-            const res = await fetch(`${apiBaseUrl}/api/customers/search`, {
+            const res  = await fetch(`${apiBaseUrl}/api/customers/search`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ searchType: type, searchValue: val })
             });
             const data = await res.json();
-
             if (!res.ok) throw new Error(data.message || 'Search failed');
-            
-            if (data.length === 0) {
-                customerSearchResults.innerHTML = '<span style="color:#6b7280">No customer found. Try different details or add a new customer.</span>';
-                return;
-            }
-
+            if (data.length === 0) { customerSearchResults.innerHTML = '<span style="color:#6b7280">No customer found.</span>'; return; }
             customerSearchResults.innerHTML = data.map(c => `
-                <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <strong>${c.customer_name}</strong> (${c.customer_id})<br>
-                        <small>Phone: ${c.phone_number} | Aadhaar: ${c.masked_aadhaar}</small>
-                    </div>
-                    <button type="button" class="primary-btn select-cust-btn" data-id="${c.id}" data-name="${c.customer_name}" data-cid="${c.customer_id}" data-phone="${c.phone_number}" data-aadhaar="${c.masked_aadhaar}" style="padding:4px 10px; font-size:0.8rem;">Select</button>
-                </div>
-            `).join('');
-
-            document.querySelectorAll('.select-cust-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    selectCustomer(e.target.dataset);
-                });
-            });
-        } catch (e) {
-            customerSearchResults.innerHTML = `<span style="color:red">${e.message}</span>`;
-        }
+                <div style="border:1px solid #ddd; padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${c.customer_name}</strong> (${c.customer_id})<br><small>Phone: ${c.phone_number} | Aadhaar: ${c.masked_aadhaar}</small></div>
+                    <button type="button" class="primary-btn select-cust-btn" data-id="${c.id}" data-name="${c.customer_name}" data-phone="${c.phone_number}" style="padding:4px 10px; font-size:0.8rem;">Select</button>
+                </div>`).join('');
+            document.querySelectorAll('.select-cust-btn').forEach(btn =>
+                btn.addEventListener('click', e => selectCustomer(e.target.dataset))
+            );
+        } catch (e) { customerSearchResults.innerHTML = `<span style="color:red">${e.message}</span>`; }
     });
 
     const selectCustomer = (dataset) => {
-        customerSelect.value = dataset.id;
-        selCustName.textContent = dataset.name;
-        selCustId.textContent = dataset.cid;
+        customerIdInput.value = dataset.id;
+        selCustName.textContent  = dataset.name;
         selCustPhone.textContent = dataset.phone;
-        selCustAadhaar.textContent = dataset.aadhaar;
-        
         customerSearchArea.classList.add('hidden');
         selectedCustomerCard.classList.remove('hidden');
-        checkSaleReady();
+        checkSubmitReady();
     };
 
     clearCustomerBtn.addEventListener('click', () => {
-        customerSelect.value = '';
+        customerIdInput.value = '';
         customerSearchArea.classList.remove('hidden');
         selectedCustomerCard.classList.add('hidden');
         customerSearchResults.innerHTML = '';
         searchValue.value = '';
-        checkSaleReady();
+        checkSubmitReady();
     });
 
+    // ── Product Selection → Auto-fill price + GST ─────────────────────────────
+    cartProductSelect.addEventListener('change', async () => {
+        const pid = cartProductSelect.value;
+        cartStockIndicator.textContent = '';
+        cartStockIndicator.className   = 'stock-indicator';
+        cartQtyInput.disabled = true;
+        cartQtyInput.value    = '';
+        cartQtyInput.removeAttribute('max');
+        addToCartBtn.disabled = true;
 
-    // --- Product Selection & Stock Check ---
-    productSelect.addEventListener('change', async () => {
-        const pid = productSelect.value;
-        if (!pid) {
-            stockIndicator.textContent = 'Select a product to check stock.';
-            stockIndicator.className = 'stock-indicator';
-            qtyInput.disabled = true;
-            qtyInput.value = '';
-            qtyInput.removeAttribute('max');
-            checkSaleReady();
-            return;
+        if (!pid) return;
+
+        // Pre-fill GST rate from product definition
+        const prod = productMap[pid];
+        if (prod && prod.gst_rate) {
+            const gstVal = String(parseFloat(prod.gst_rate));
+            const opt    = cartGstSelect.querySelector(`option[value="${gstVal}"]`);
+            if (opt) cartGstSelect.value = gstVal;
+            else      cartGstSelect.value = '0';
+        } else {
+            cartGstSelect.value = '0';
         }
 
-        stockIndicator.textContent = 'Checking stock...';
-        stockIndicator.className = 'stock-indicator';
-        
         try {
+            // Stock check
             const stockRes = await fetch(`${apiBaseUrl}/api/stock/${pid}`, { headers: { Authorization: `Bearer ${token}` } });
             if (stockRes.ok) {
                 const stock = await stockRes.json();
                 const available = Number(stock.quantity);
-                
                 if (available === 0) {
-                    stockIndicator.textContent = 'OUT OF STOCK!';
-                    stockIndicator.className = 'stock-indicator out-stock';
-                    qtyInput.disabled = true;
-                    qtyInput.value = '';
-                } else if (available < 5) {
-                    stockIndicator.textContent = `Available Stock: ${available} - (LOW STOCK WARNING)`;
-                    stockIndicator.className = 'stock-indicator out-stock'; // reuse red color for warning
-                    qtyInput.disabled = false;
-                    qtyInput.max = available;
+                    cartStockIndicator.textContent = 'OUT OF STOCK!';
+                    cartStockIndicator.className   = 'stock-indicator out-stock';
                 } else {
-                    stockIndicator.textContent = `Available Stock: ${available} (IN STOCK)`;
-                    stockIndicator.className = 'stock-indicator in-stock';
-                    qtyInput.disabled = false;
-                    qtyInput.max = available;
+                    cartStockIndicator.textContent = `In Stock: ${available}${available < 5 ? ' (LOW)' : ''}`;
+                    cartStockIndicator.className   = available < 5 ? 'stock-indicator out-stock' : 'stock-indicator in-stock';
+                    cartQtyInput.disabled = false;
+                    cartQtyInput.max      = available;
+                    addToCartBtn.disabled = false;
                 }
-            } else if (stockRes.status === 404) {
-                stockIndicator.textContent = 'OUT OF STOCK (No stock record)!';
-                stockIndicator.className = 'stock-indicator out-stock';
-                qtyInput.disabled = true;
-                qtyInput.value = '';
+            } else {
+                cartStockIndicator.textContent = 'OUT OF STOCK!';
+                cartStockIndicator.className   = 'stock-indicator out-stock';
             }
-
-            // Fetch Selling Price
+            // Auto-fill selling price
             const priceRes = await fetch(`${apiBaseUrl}/api/prices/${pid}`, { headers: { Authorization: `Bearer ${token}` } });
             if (priceRes.ok) {
-                const priceData = await priceRes.json();
-                if (priceData && priceData.selling_price) {
-                    priceInput.value = priceData.selling_price;
-                }
+                const pd = await priceRes.json();
+                if (pd && pd.selling_price) cartPriceInput.value = pd.selling_price;
             }
-            calculateTotal();
-            checkSaleReady();
-        } catch (e) {
-            stockIndicator.textContent = 'Error checking stock.';
-            stockIndicator.className = 'stock-indicator out-stock';
-            qtyInput.disabled = true;
-            checkSaleReady();
-        }
+        } catch { cartStockIndicator.textContent = 'Error checking stock.'; cartStockIndicator.className = 'stock-indicator out-stock'; }
     });
 
-    const checkSaleReady = () => {
-        if (customerSelect.value && productSelect.value && !qtyInput.disabled) {
-            submitBtn.disabled = false;
+    // ── Add to Cart ───────────────────────────────────────────────────────────
+    addToCartBtn.addEventListener('click', () => {
+        const pid   = cartProductSelect.value;
+        const qty   = parseInt(cartQtyInput.value, 10);
+        const price = parseFloat(cartPriceInput.value);
+        const gst   = parseFloat(cartGstSelect.value) || 0;
+        const max   = parseInt(cartQtyInput.max, 10);
+
+        if (!pid)            return showMsg('Please select a product.', true);
+        if (!qty || qty < 1) return showMsg('Quantity must be at least 1.', true);
+        if (qty > max)       return showMsg(`Cannot add more than available stock (${max}).`, true);
+        if (!price || price < 0) return showMsg('Enter a valid selling price.', true);
+
+        const prod    = productMap[pid] || {};
+        const subTotal = qty * price;
+        const halfGst  = gst / 2;
+        const cgst     = parseFloat(((subTotal * halfGst) / 100).toFixed(2));
+        const sgst     = parseFloat(((subTotal * halfGst) / 100).toFixed(2));
+        const lineTotal = parseFloat((subTotal + cgst + sgst).toFixed(2));
+
+        // Check if product already in cart — merge
+        const existing = cartItems.findIndex(i => i.productId == pid);
+        if (existing >= 0) {
+            const ex = cartItems[existing];
+            const newQty = ex.quantity + qty;
+            if (newQty > max) return showMsg(`Total cart quantity for this product would exceed stock (${max}).`, true);
+            const newSub  = newQty * price;
+            const newCgst = parseFloat(((newSub * halfGst) / 100).toFixed(2));
+            const newSgst = parseFloat(((newSub * halfGst) / 100).toFixed(2));
+            cartItems[existing] = { ...ex, quantity: newQty, cgst: newCgst, sgst: newSgst, lineTotal: parseFloat((newSub + newCgst + newSgst).toFixed(2)) };
         } else {
-            submitBtn.disabled = true;
+            cartItems.push({
+                productId:   parseInt(pid),
+                productName: prod.product_name || 'Unknown',
+                productCode: prod.product_code || '',
+                hsnCode:     prod.hsn_code || '',
+                quantity:    qty,
+                sellingPrice: price,
+                gstRate:     gst,
+                cgst, sgst,
+                lineTotal
+            });
         }
-    };
 
+        showMsg('');
+        renderCart();
+        // Reset cart inputs
+        cartProductSelect.value = '';
+        cartQtyInput.value      = '';
+        cartPriceInput.value    = '';
+        cartGstSelect.value     = '0';
+        cartQtyInput.disabled   = true;
+        addToCartBtn.disabled   = true;
+        cartStockIndicator.textContent = '';
+    });
 
-    // --- Sale Submission & Invoice ---
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const q = parseInt(qtyInput.value);
-        const max = parseInt(qtyInput.max);
-        if (q > max) {
-            showMsg(`Cannot sell more than available stock (${max}).`, true);
+    // ── Render Cart Table ─────────────────────────────────────────────────────
+    const renderCart = () => {
+        cartCountBadge.textContent = `${cartItems.length} item${cartItems.length !== 1 ? 's' : ''}`;
+
+        if (cartItems.length === 0) {
+            cartEmpty.classList.remove('hidden');
+            cartTableWrap.classList.add('hidden');
+            submitSaleBtn.disabled = true;
             return;
         }
+        cartEmpty.classList.add('hidden');
+        cartTableWrap.classList.remove('hidden');
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Recording...';
+        let subTotalAll = 0, cgstAll = 0, sgstAll = 0;
+        cartItems.forEach(item => {
+            subTotalAll += item.quantity * item.sellingPrice;
+            cgstAll     += item.cgst;
+            sgstAll     += item.sgst;
+        });
+        const grandTotal = subTotalAll + cgstAll + sgstAll;
+
+        cartTbody.innerHTML = cartItems.map((item, idx) => `
+            <tr>
+                <td>
+                    <strong style="font-size:0.83rem;">${item.productName}</strong>
+                    ${item.hsnCode ? `<br><small style="color:#9ca3af;">HSN: ${item.hsnCode}</small>` : ''}
+                </td>
+                <td style="text-align:center;">${item.quantity}</td>
+                <td style="text-align:right;">${fmt(item.sellingPrice)}</td>
+                <td style="text-align:right; font-size:0.8rem; color:#92400e;">
+                    ${item.gstRate > 0 ? `${item.gstRate}%<br><small>C+S: ${fmt(item.cgst + item.sgst)}</small>` : '0%'}
+                </td>
+                <td style="text-align:right; font-weight:700; color:#2F6B38;">${fmt(item.lineTotal)}</td>
+                <td><button class="remove-item-btn" data-idx="${idx}">✕</button></td>
+            </tr>`).join('');
+
+        // Remove buttons
+        cartTbody.querySelectorAll('.remove-item-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                cartItems.splice(parseInt(btn.dataset.idx), 1);
+                renderCart();
+            });
+        });
+
+        // Summary
+        const hasTax = cgstAll > 0 || sgstAll > 0;
+        cartSummary.innerHTML = `
+            <div class="summary-row"><span>Sub-total</span><span>${fmt(subTotalAll)}</span></div>
+            ${hasTax ? `<div class="summary-row"><span>CGST</span><span>${fmt(cgstAll)}</span></div>
+                        <div class="summary-row"><span>SGST</span><span>${fmt(sgstAll)}</span></div>` : ''}
+            <div class="summary-row grand"><span>Grand Total</span><span>${fmt(grandTotal)}</span></div>`;
+
+        checkSubmitReady();
+    };
+
+    // ── Check if sale can be submitted ────────────────────────────────────────
+    const checkSubmitReady = () => {
+        submitSaleBtn.disabled = !(customerIdInput.value && cartItems.length > 0);
+    };
+
+    // ── Submit Sale ───────────────────────────────────────────────────────────
+    submitSaleBtn.addEventListener('click', async () => {
+        if (!customerIdInput.value) return showMsg('Please select a customer.', true);
+        if (cartItems.length === 0)  return showMsg('Cart is empty. Add at least one product.', true);
+
+        submitSaleBtn.disabled   = true;
+        submitSaleBtn.textContent = '⏳ Recording...';
         showMsg('');
 
         const payload = {
-            customerId: customerSelect.value,
-            productId: productSelect.value,
-            saleDate: document.getElementById('saleDate').value,
-            invoiceNumber: document.getElementById('invoiceNumber').value.trim(),
-            quantity: qtyInput.value,
-            sellingPrice: priceInput.value,
-            notes: document.getElementById('notes').value.trim()
+            customerId:    customerIdInput.value,
+            saleDate:      document.getElementById('saleDate').value,
+            invoiceNumber: document.getElementById('invoiceNumber').value.trim() || null,
+            notes:         document.getElementById('notes').value.trim() || null,
+            items: cartItems.map(item => ({
+                productId:    item.productId,
+                quantity:     item.quantity,
+                sellingPrice: item.sellingPrice,
+                gstRate:      item.gstRate
+            }))
         };
 
         try {
-            const res = await fetch(`${apiBaseUrl}/api/sales`, {
+            const res  = await fetch(`${apiBaseUrl}/api/sales`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Failed to record sale');
-            
-            showMsg(`Sale recorded successfully! Stock has been updated.`);
-            showMsg('Sale recorded successfully! Stock has been updated.');
 
-            // Reset form details
-            form.reset();
+            showMsg(`✓ Sale recorded! Invoice: ${data.invoiceNumber}`);
+            cartItems = [];
+            renderCart();
+            clearCustomerBtn.click();
             document.getElementById('saleDate').valueAsDate = new Date();
-            clearCustomerBtn.click(); // resets customer selection
-            
-            // Re-trigger product change to refresh stock
-            const event = new Event('change');
-            productSelect.dispatchEvent(event);
-            
-            calculateTotal();
-            loadSales();
+            document.getElementById('notes').value = '';
+            await loadSales();
         } catch (err) {
             showMsg(err.message, true);
-            submitBtn.disabled = false;
         } finally {
-            submitBtn.textContent = 'Record Sale';
+            submitSaleBtn.textContent = '✓ Record Sale & Generate Invoice';
+            checkSubmitReady();
         }
     });
 
-
-    // --- Sales History ---
+    // ── Sales History ─────────────────────────────────────────────────────────
     const loadSales = async () => {
         try {
             const params = new URLSearchParams();
             if (searchInput.value.trim()) params.append('search', searchInput.value.trim());
-            if (customerFilter.value) params.append('customerId', customerFilter.value);
+            if (customerFilter.value)    params.append('customerId', customerFilter.value);
 
-            const res = await fetch(`${apiBaseUrl}/api/sales?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+            const res  = await fetch(`${apiBaseUrl}/api/sales?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
             if (!res.ok) throw new Error();
             const data = await res.json();
-            
+
             if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No sales found.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No sales found.</td></tr>';
+                currentSalesData = [];
                 return;
             }
+            currentSalesData = data;
 
-            tableBody.innerHTML = data.map(s => `
+            tableBody.innerHTML = data.map(s => {
+                const items   = Array.isArray(s.items) ? s.items : [];
+                const preview = items.slice(0, 2).map(i => `${i.product_name} x${i.quantity}`).join(', ') + (items.length > 2 ? ` +${items.length - 2} more` : '');
+                return `
                 <tr>
                     <td>
-                        <strong>${new Date(s.sale_date).toLocaleDateString()}</strong><br>
-                        <small style="color:#6b7280">${s.invoice_number ? 'Inv: ' + s.invoice_number : 'No Invoice'}</small>
+                        <strong>${new Date(s.sale_date).toLocaleDateString('en-IN')}</strong><br>
+                        <small style="color:#6b7280;">${s.invoice_number ? 'Inv: ' + s.invoice_number : 'No Invoice'}</small>
                     </td>
+                    <td><strong>${s.customer_name}</strong></td>
+                    <td style="font-size:0.85rem; color:#4b5563;">${preview}</td>
+                    <td style="font-weight:700; color:#2F6B38;">${fmt(s.total_amount)}</td>
                     <td>
-                        <strong>${s.product_name}</strong> <small>(${s.product_code})</small><br>
-                        <span style="color:#6b7280; font-size:0.85rem">${s.customer_name}</span>
+                        <div class="action-btns">
+                            <button type="button" class="primary-btn generate-pdf-btn" data-id="${s.sale_id}" style="padding:4px 8px; font-size:0.78rem; background:#4B5563; border-color:#4B5563;">🖨️ PDF</button>
+                            <button type="button" class="primary-btn thermal-btn" data-id="${s.sale_id}" style="padding:4px 8px; font-size:0.78rem; background:#7C3AED; border-color:#7C3AED;">🧾 Thermal</button>
+                            <button type="button" class="primary-btn send-wa-btn" data-id="${s.sale_id}" style="padding:4px 8px; font-size:0.78rem; background:#10B981; border-color:#10B981;">💬 WA</button>
+                        </div>
                     </td>
-                    <td>${s.quantity} x ${formatCurrency(s.selling_price)}</td>
-                    <td style="font-weight:600; color:#2F6B38">${formatCurrency(s.total_amount)}</td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
 
-        } catch (e) {
-            tableBody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color:red">Failed to load sales.</td></tr>';
+            document.querySelectorAll('.generate-pdf-btn').forEach(btn => btn.addEventListener('click', e => handleGeneratePDF(e.target.dataset.id)));
+            document.querySelectorAll('.thermal-btn').forEach(btn => btn.addEventListener('click', e => handleThermalPrint(e.target.dataset.id)));
+            document.querySelectorAll('.send-wa-btn').forEach(btn => btn.addEventListener('click', e => handleSendWA(e.target.dataset.id)));
+
+        } catch {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color:red">Failed to load sales.</td></tr>';
         }
     };
 
-    searchInput.addEventListener('input', () => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(loadSales, 300); });
-    customerFilter.addEventListener('change', loadSales);
+    // ── Populate A4 Invoice Template ──────────────────────────────────────────
+    const populateInvoiceTemplate = (sale) => {
+        document.getElementById('inv-number').textContent = sale.invoice_number || 'N/A';
+        document.getElementById('inv-date').textContent   = new Date(sale.sale_date).toLocaleDateString('en-IN');
+        document.getElementById('inv-cust-name').textContent  = sale.customer_name || '';
+        document.getElementById('inv-cust-phone').textContent = sale.phone_number  || 'N/A';
+        document.getElementById('inv-notes').textContent  = sale.notes || 'None';
 
+        const items = Array.isArray(sale.items) ? sale.items : [];
+        let subTotal = 0, totalCgst = 0, totalSgst = 0;
+
+        document.getElementById('inv-items-tbody').innerHTML = items.map(item => {
+            const sub  = parseFloat(item.quantity) * parseFloat(item.selling_price);
+            const gst  = parseFloat(item.gst_rate) || 0;
+            const cgst = parseFloat(item.cgst_amount) || 0;
+            const sgst = parseFloat(item.sgst_amount) || 0;
+            const tot  = parseFloat(item.total_amount) || (sub + cgst + sgst);
+            subTotal   += sub;
+            totalCgst  += cgst;
+            totalSgst  += sgst;
+            return `
+            <tr>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB;"><strong>${item.product_name}</strong><br><small style="color:#6B7280;">${item.product_code}</small></td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:center;">${item.hsn_code || '—'}</td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:center;">${item.quantity}</td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:right;">${fmt(item.selling_price)}</td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:right;">${gst}%</td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:right;">${fmt(cgst + sgst)}</td>
+                <td style="padding:9px 12px; border:1px solid #E5E7EB; text-align:right; font-weight:700;">${fmt(tot)}</td>
+            </tr>`;
+        }).join('');
+
+        const grandTotal = subTotal + totalCgst + totalSgst;
+        const hasTax     = totalCgst > 0 || totalSgst > 0;
+        document.getElementById('inv-summary-tbody').innerHTML = `
+            <tr><td style="padding:5px 10px; color:#4B5563;">Sub-total</td><td style="padding:5px 10px; text-align:right;">${fmt(subTotal)}</td></tr>
+            ${hasTax ? `
+            <tr><td style="padding:5px 10px; color:#4B5563;">CGST</td><td style="padding:5px 10px; text-align:right;">${fmt(totalCgst)}</td></tr>
+            <tr><td style="padding:5px 10px; color:#4B5563;">SGST</td><td style="padding:5px 10px; text-align:right;">${fmt(totalSgst)}</td></tr>` : ''}
+            <tr style="border-top:2px solid #2F6B38; font-weight:800; font-size:1.05em; color:#2F6B38;">
+                <td style="padding:8px 10px;">Grand Total</td>
+                <td style="padding:8px 10px; text-align:right;">${fmt(grandTotal)}</td>
+            </tr>`;
+    };
+
+    // ── Generate A4 PDF ───────────────────────────────────────────────────────
+    const generatePdfBlob = async (sale) => {
+        populateInvoiceTemplate(sale);
+        const element = document.getElementById('invoice-template').cloneNode(true);
+        element.style.display = 'block';
+        const opt = {
+            margin:      0,
+            filename:    `${sale.invoice_number || 'Invoice_' + sale.sale_id}.pdf`,
+            image:       { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF:       { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        return { element, opt };
+    };
+
+    const handleGeneratePDF = async (saleId) => {
+        const sale = currentSalesData.find(s => s.sale_id == saleId);
+        if (!sale) return;
+        const { element, opt } = await generatePdfBlob(sale);
+        try { await html2pdf().set(opt).from(element).save(); }
+        catch { alert('Failed to generate PDF.'); }
+    };
+
+    // ── Thermal Print ─────────────────────────────────────────────────────────
+    const handleThermalPrint = (saleId) => {
+        const sale = currentSalesData.find(s => s.sale_id == saleId);
+        if (!sale) return;
+
+        const items = Array.isArray(sale.items) ? sale.items : [];
+        document.getElementById('th-inv-number').textContent  = sale.invoice_number || 'N/A';
+        document.getElementById('th-inv-date').textContent    = new Date(sale.sale_date).toLocaleDateString('en-IN');
+        document.getElementById('th-cust-name').textContent   = sale.customer_name || '';
+        document.getElementById('th-cust-phone').textContent  = sale.phone_number  || '';
+
+        let subTotal = 0, totalTax = 0;
+        document.getElementById('th-items-tbody').innerHTML = items.map(item => {
+            const sub = parseFloat(item.quantity) * parseFloat(item.selling_price);
+            const tax = parseFloat(item.cgst_amount || 0) + parseFloat(item.sgst_amount || 0);
+            const tot = parseFloat(item.total_amount) || (sub + tax);
+            subTotal += sub; totalTax += tax;
+            return `
+            <tr>
+                <td style="padding:2px 0;">${item.product_name}</td>
+                <td style="text-align:center; padding:2px 2px;">${item.quantity}</td>
+                <td style="text-align:right; padding:2px 2px;">₹${parseFloat(item.selling_price).toFixed(0)}</td>
+                <td style="text-align:right; padding:2px 0;">₹${tot.toFixed(0)}</td>
+            </tr>`;
+        }).join('');
+
+        const grandTotal = subTotal + totalTax;
+        document.getElementById('th-summary').innerHTML = `
+            <div style="display:flex; justify-content:space-between;"><span>Sub-total</span><span>₹${subTotal.toFixed(2)}</span></div>
+            ${totalTax > 0 ? `<div style="display:flex; justify-content:space-between;"><span>GST</span><span>₹${totalTax.toFixed(2)}</span></div>` : ''}
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;"><span>TOTAL</span><span>₹${grandTotal.toFixed(2)}</span></div>`;
+
+        // Make thermal template visible for print, hide after
+        const thermal = document.getElementById('thermal-template');
+        thermal.style.display = 'block';
+        window.print();
+        thermal.style.display = 'none';
+    };
+
+    // ── Send WhatsApp ─────────────────────────────────────────────────────────
+    const handleSendWA = async (saleId) => {
+        const sale = currentSalesData.find(s => s.sale_id == saleId);
+        if (!sale) return;
+        if (!sale.phone_number) { alert('Customer has no phone number.'); return; }
+
+        const btn = document.querySelector(`.send-wa-btn[data-id="${saleId}"]`);
+        const origText = btn.innerHTML;
+        btn.innerHTML = '⏳ Sending...';
+        btn.disabled  = true;
+
+        try {
+            populateInvoiceTemplate(sale);
+            const element = document.getElementById('invoice-template').cloneNode(true);
+            element.style.display = 'block';
+            const opt = {
+                margin: 0, filename: `${sale.invoice_number || 'Invoice_' + sale.sale_id}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            const base64Pdf = await html2pdf().set(opt).from(element).outputPdf('datauristring');
+            const message = `Hello ${sale.customer_name},\n\nThank you for your purchase at Shri Amman Agro Traders.\n\nInvoice: ${sale.invoice_number || 'N/A'}\nTotal Amount: ${fmt(sale.total_amount)}\n\nRegards,\nShri Amman Agro Traders`;
+            const res = await fetch(`${apiBaseUrl}/api/whatsapp/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ phoneNumber: sale.phone_number, base64Pdf, filename: opt.filename, message })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.message || 'Send failed');
+            alert('✓ WhatsApp invoice sent!');
+        } catch (err) {
+            alert(`Failed: ${err.message}`);
+        } finally {
+            btn.innerHTML = origText;
+            btn.disabled  = false;
+        }
+    };
+
+    // ── Event Listeners ───────────────────────────────────────────────────────
+    searchInput.addEventListener('input', () => {
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(loadSales, 300);
+    });
+    customerFilter.addEventListener('change', loadSales);
     topNav.addEventListener('click', (event) => {
         const link = event.target.closest('a[data-logout="true"]');
-        if (link) {
-            event.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        }
+        if (link) { event.preventDefault(); localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'index.html'; }
     });
 
+    // ── Init ──────────────────────────────────────────────────────────────────
     renderNav();
     await loadFormData();
     await loadSales();

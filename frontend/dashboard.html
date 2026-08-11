@@ -154,7 +154,7 @@
         </div>
     </div>
 
-    <div class="section-grid">
+    <div class="section-grid triple">
         <div class="card">
             <div class="card-title">🏆 Top Selling Products</div>
             <div class="chart-container"><canvas id="topChart"></canvas></div>
@@ -162,6 +162,17 @@
         <div class="card">
             <div class="card-title">📅 Daily Sales Trend (Last 30 Days)</div>
             <div class="chart-container"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title">💬 WhatsApp Integration Status</div>
+            <div id="wa-status-container" style="text-align: center; padding-top: 10px;">
+                <p id="wa-status-text" style="font-weight: 600; color: var(--muted); margin-bottom: 15px;">Checking status...</p>
+                <div id="wa-qr-container" style="display: none;">
+                    <img id="wa-qr-img" src="" alt="WhatsApp QR Code" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border);">
+                    <p style="font-size: 0.85rem; color: var(--muted); margin-top: 10px;">Scan this QR code with WhatsApp on your phone (Linked Devices).</p>
+                </div>
+                <button id="wa-refresh-btn" class="logout-btn" style="background: var(--bg); color: var(--text); border-color: var(--border); margin-top: 15px;">Refresh Status</button>
+            </div>
         </div>
     </div>
 
@@ -189,6 +200,31 @@
                     </thead>
                     <tbody id="low-stock-body">
                         <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit & Margin Analytics Section -->
+    <div class="section-grid single" style="margin-top: 28px;">
+        <div class="card">
+            <div class="card-title">💰 Product Profitability & Margin Analytics <span class="badge" style="background:#d1fae5; color:#065f46;">Live Analytics</span></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Qty Sold</th>
+                            <th>Revenue</th>
+                            <th>Est. Purchase Cost</th>
+                            <th>Gross Profit</th>
+                            <th>Margin %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-profit-body">
+                        <tr><td colspan="7" class="empty-state">Loading profit analytics...</td></tr>
                     </tbody>
                 </table>
             </div>

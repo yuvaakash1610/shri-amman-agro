@@ -9,5 +9,6 @@ router.get('/low-stock', authenticateToken, dashboardController.getLowStockProdu
 router.get('/stock-by-product', authenticateToken, dashboardController.getStockByProduct);
 router.get('/sales-trend', authenticateToken, dashboardController.getSalesTrend);
 router.get('/purchase-vs-sales', authenticateToken, dashboardController.getPurchaseVsSales);
+router.get('/profit-analytics', authenticateToken, dashboardController.getProfitAnalytics);
 
 module.exports = router;

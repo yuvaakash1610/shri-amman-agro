@@ -208,6 +208,13 @@ const initializeDatabase = async () => {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_prices_product ON product_prices (product_id);
   `);
+
+  // GST & HSN columns (safe to run repeatedly)
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS hsn_code VARCHAR(20) DEFAULT NULL;`);
+  await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS gst_rate NUMERIC(5,2) NOT NULL DEFAULT 0;`);
+  await pool.query(`ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS gst_rate NUMERIC(5,2) NOT NULL DEFAULT 0;`);
+  await pool.query(`ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS cgst_amount NUMERIC(12,2) NOT NULL DEFAULT 0;`);
+  await pool.query(`ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS sgst_amount NUMERIC(12,2) NOT NULL DEFAULT 0;`);
 };
 
 module.exports = {

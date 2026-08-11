@@ -78,6 +78,10 @@
                     <label><span>Category</span><select id="categoryId" required></select></label>
                     <label><span>Unit</span><select id="unitId" required></select></label>
                     <label><span>Status</span><select id="status"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <label><span>HSN Code</span><input type="text" id="hsnCode" placeholder="e.g. 3101"></label>
+                        <label><span>GST Rate (%)</span><select id="gstRate"><option value="0">0% (Exempt)</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></label>
+                    </div>
                     <label><span>Description</span><textarea id="description"></textarea></label>
                     <div class="button-row">
                         <button type="submit" class="primary-btn">Save Product</button>
@@ -115,6 +119,8 @@
                                 <th>Company</th>
                                 <th>Category</th>
                                 <th>Unit</th>
+                                <th>HSN</th>
+                                <th>GST%</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>

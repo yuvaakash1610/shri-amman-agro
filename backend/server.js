@@ -12,6 +12,8 @@ const priceRoutes = require('./routes/priceRoutes');
 const purchaseRoutes = require('./routes/purchaseRoutes');
 const saleRoutes = require('./routes/saleRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
+const whatsappService = require('./services/whatsappService');
 const { authenticateToken } = require('./middlewares/authMiddleware');
 const companyController = require('./controllers/companyController');
 const productController = require('./controllers/productController');
@@ -30,7 +32,7 @@ const sendFrontendFile = (res, relativePath = 'index.html') => {
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Serve frontend static files
 app.use(express.static(frontendPath));
@@ -70,6 +72,7 @@ app.get('/api/prices/:productId/history', authenticateToken, priceController.get
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 app.get('/', (req, res) => {
   sendFrontendFile(res, 'index.html');
@@ -127,13 +130,21 @@ app.use((req, res, next) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).json({ message: 'Something broke!', error: err.message });
 });
 
 initializeDatabase()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      // Initialize WhatsApp Client in the background
+      setTimeout(() => {
+        try {
+          whatsappService.initWhatsApp();
+        } catch (e) {
+          console.error('Failed to init WhatsApp:', e);
+        }
+      }, 2000);
     });
   })
   .catch((error) => {
