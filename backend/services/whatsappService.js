@@ -168,6 +168,10 @@ const tryInitialize = () => {
 };
 
 const initWhatsApp = () => {
+    if (process.env.VERCEL || (process.env.NODE_ENV === 'production' && process.env.ENABLE_WHATSAPP === 'false')) {
+        console.log('WhatsApp Service skipped in serverless environment.');
+        return;
+    }
     if (isInitializing || isReady) return;
     console.log('Initializing WhatsApp Service...');
     tryInitialize();
