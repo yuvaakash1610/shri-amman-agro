@@ -135,19 +135,21 @@ app.use((err, req, res, next) => {
 
 initializeDatabase()
   .then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server is running on port ${PORT}`);
-      // Initialize WhatsApp Client in the background
-      setTimeout(() => {
-        try {
-          whatsappService.initWhatsApp();
-        } catch (e) {
-          console.error('Failed to init WhatsApp:', e);
-        }
-      }, 2000);
-    });
+    if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on port ${PORT}`);
+        setTimeout(() => {
+          try {
+            whatsappService.initWhatsApp();
+          } catch (e) {
+            console.error('Failed to init WhatsApp:', e);
+          }
+        }, 2000);
+      });
+    }
   })
   .catch((error) => {
     console.error('Database initialization failed:', error);
-    process.exit(1);
   });
+
+module.exports = app;
