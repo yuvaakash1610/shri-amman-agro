@@ -14,7 +14,7 @@
 
 A state-of-the-art, full-stack enterprise web application designed for **Shri Amman Agro Traders** to automate inventory management, sales invoicing, purchase tracking, customer analytics, GST calculations, and automated WhatsApp invoice dispatching.
 
-[Explore Features](#-key-features) • [Deployment Guide](#-free-deployment-guide) • [Setup & Installation](#-getting-started) • [API Reference](#-api-endpoints)
+
 
 </div>
 
@@ -217,27 +217,7 @@ All endpoints expect JSON payloads and return JSON responses. Protected routes r
 
 ---
 
-## 🚀 Free Deployment Guide
 
-You can deploy the complete stack for **100% FREE** using Render and Neon PostgreSQL:
-
-### Step 1: Deploy Database (Neon.tech - Recommended Free PostgreSQL)
-1. Go to [Neon.tech](https://neon.tech/) and create a free PostgreSQL database instance.
-2. Copy your **PostgreSQL Connection String** (e.g. `postgres://user:password@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require`).
-
-### Step 2: Deploy Backend (Render.com)
-1. Push your code to a GitHub repository (`https://github.com/yuvaakash1610/shri-amman-agro`).
-2. Go to [Render.com](https://render.com/) and create a new **Web Service**.
-3. Connect your GitHub repo `yuvaakash1610/shri-amman-agro`.
-4. Set Build Command: `npm install`
-5. Set Start Command: `node backend/server.js`
-6. Add Environment Variables on Render:
-   - `PORT` = `3000`
-   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT` (or paste full `DATABASE_URL` from Neon)
-   - `JWT_SECRET` = `your_secure_secret_key`
-
-### Step 3: Serve Frontend
-- Render automatically serves static HTML/CSS/JS frontend files out-of-the-box directly from the backend server!
 
 ---
 
