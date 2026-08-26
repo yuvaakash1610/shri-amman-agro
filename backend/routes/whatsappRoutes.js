@@ -23,4 +23,14 @@ router.post('/send', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/logout', authenticateToken, async (req, res) => {
+    try {
+        const result = await whatsappService.logoutWhatsApp();
+        res.json(result);
+    } catch (error) {
+        console.error('Error logging out WhatsApp:', error);
+        res.status(500).json({ message: 'Failed to log out of WhatsApp', error: error.message });
+    }
+});
+
 module.exports = router;

@@ -16,10 +16,13 @@
         .topbar p { color: var(--text-muted); margin-top: 6px; }
         .card { background: white; border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px rgba(47, 107, 56, 0.08); }
         .panel { padding: 20px; }
-        .table-wrap { overflow-x: auto; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); background: #ffffff; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #edf2ed; font-size: 0.95rem; }
-        th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
+        th { background: #E8F2E9; color: #1F3822; font-weight: 700; padding: 12px 10px; border-bottom: 2px solid #C8E0CB; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.04em; }
+        td { padding: 12px 10px; border-bottom: 1px solid #E5EFE6; font-size: 0.92rem; vertical-align: middle; text-align: left; }
+        tbody tr:nth-child(even) td { background-color: #FFFFFF; }
+        tbody tr:nth-child(odd) td { background-color: #F4F8F4; }
+        tbody tr:hover td { background-color: #E2EFE3 !important; transition: background-color 0.15s ease-in-out; }
         .search-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; background: #fafcfa; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); }
         .search-row input[type="text"], .search-row select { padding: 0.7rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; min-width: 200px; flex: 1; }
         .checkbox-group { display: flex; gap: 16px; align-items: center; }
@@ -102,6 +105,7 @@
         </div>
     </div>
 
+    <script src="js/nav.js"></script>
     <script src="js/stock.js"></script>
 </body>
 </html>

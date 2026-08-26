@@ -1,116 +1,260 @@
-# Shri Amman Agro Traders 🌾
-**A Complete Inventory & Sales Management System**
-This is a full-stack, responsive web application designed specifically for agro-traders to seamlessly manage day-to-day business operations. It tracks inventory, processes sales and purchases, manages customer/company databases, and provides real-time analytics on stock and revenue.
+<div align="center">
+
+# 🌾 Shri Amman Agro Traders
+### *Smart Enterprise Resource & POS Management System*
+
+[![Node.js](https://img.shields.io/badge/Node.js-v24.0+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-v5.0-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-v14+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/)
+[![WhatsApp API](https://img.shields.io/badge/WhatsApp_API-Integrated-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://github.com/pedroslopez/whatsapp-web.js)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=for-the-badge)](https://opensource.org/licenses/ISC)
+
 ---
-## 🚀 Features
-### 1. 📊 Interactive Dashboard
-- **Live Metrics:** View total products, available stock, total items sold, total purchase value, and total sales revenue.
-- **Visual Analytics:** Beautifully integrated charts (using Chart.js) showing Daily Sales Trends and Monthly Purchases vs. Sales.
-- **Stock Alerts:** Immediate visibility into "Low Stock" and "Out of Stock" products.
-- **Top Sellers:** Automatically calculates and displays the highest-selling products.
-### 2. 👥 Customer & Company Management
-- **Customer Database:** Store customer details (Farmers, Retailers, Wholesalers). 
-- **Secure Searching:** Search customers by Phone Number, Customer ID, Name, or Aadhaar. Aadhaar numbers are securely masked in the UI.
-- **Company Management:** Track partner companies and suppliers.
-### 3. 📦 Product & Stock Management
-- **Product Catalog:** Manage product codes, names, categories, and associate them with companies.
-- **Real-Time Stock Tracking:** View accurate stock levels. The system dynamically tags stock as `IN STOCK`, `LOW STOCK` (< 5 units), or `OUT OF STOCK` (0 units).
-- **Price Management:** Easily update the Buying Price and Selling Price for any product.
-### 4. 🛒 Purchasing & Selling (Transactions)
-- **Purchasing:** Record incoming inventory from suppliers. Automatically **increases** the stock levels of the purchased products.
-- **Selling:** Fast, optimized checkout process. Automatically **decreases** stock levels. Includes real-time stock verification to prevent overselling.
-### 5. 🔒 Security & UX
-- **Authentication:** Secure login portal with JWT (JSON Web Tokens) and password hashing (bcrypt).
-- **Responsive UI:** A clean, modern, and earthy-green aesthetic that works flawlessly on desktops and tablets.
-- **Unified Navigation:** Consistent, horizontally scrolling navigation bar across all modules.
+
+A state-of-the-art, full-stack enterprise web application designed for **Shri Amman Agro Traders** to automate inventory management, sales invoicing, purchase tracking, customer analytics, GST calculations, and automated WhatsApp invoice dispatching.
+
+[Explore Features](#-key-features) • [Deployment Guide](#-free-deployment-guide) • [Setup & Installation](#-getting-started) • [API Reference](#-api-endpoints)
+
+</div>
+
 ---
-## 🛠️ Technology Stack
-- **Frontend:** HTML5, CSS3 (Custom Design System), Vanilla JavaScript (ES6+), Chart.js
-- **Backend:** Node.js, Express.js
-- **Database:** PostgreSQL (using `pg` Node module)
-- **Security:** `jsonwebtoken`, `bcrypt`, `cors`
+
+## ⚡ Key Features
+
+| Module | Description |
+|---|---|
+| 🔐 **Authentication & Security** | JWT-based auth with bcrypt password hashing & multi-role access control (Admin, Manager, Staff) |
+| 📊 **Real-time Analytics Dashboard** | Live KPIs, sales/purchase graphs, low-stock warnings, hover popovers & product profitability breakdown |
+| 🧾 **Smart POS & Sales** | Fast cart creation with auto-filled prices from Price Management, manual overrides, & auto GST calculation |
+| 📄 **Instant PDF & WhatsApp Dispatch** | Auto-generate printable invoices and send PDF bills directly to customer WhatsApp |
+| 👥 **Customer Management** | Track customer profiles, Aadhaar numbers, phone numbers, addresses, and purchase histories |
+| 🏢 **Supplier & Company Directory** | Manage vendor details, GSTINs, and purchase records |
+| 📦 **Inventory & Stock Tracking** | Product categorization, unit management, reorder alerts, & full stock movement audit trails |
+| 💰 **Price Management Engine** | Dual tracking for purchase & selling prices with active/historical price logging |
+
 ---
-## ⚙️ Installation & Setup
-### Prerequisites
-1. **Node.js** (v14 or higher)
-2. **PostgreSQL** (v12 or higher)
-### 1. Clone & Install Dependencies
-Navigate to the project folder and install the required Node.js packages:
-```bash
-npm install
+
+## 🛠️ Technology Architecture
+
 ```
-### 2. Database Setup
-1. Open PostgreSQL (pgAdmin or psql command line).
-2. Create a new database (e.g., `shri_amman_agro`).
-3. Execute the SQL schema (located in your database setup file or generated via backend scripts) to create the following tables:
-   - `users`
-   - `customers`
-   - `companies`
-   - `products`
-   - `stock`
-   - `prices`
-   - `purchases` & `purchase_items`
-   - `sales` & `sale_items`
-### 3. Environment Variables
-Create a `.env` file in the root directory (or use the existing one) and configure the following:
-```env
-PORT=3000
-DB_USER=postgres
-DB_PASSWORD=your_db_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=shri_amman_agro
-JWT_SECRET=your_super_secret_jwt_key
+                      +-----------------------------+
+                      |   Frontend (Vanilla Stack)   |
+                      |   HTML5 + CSS3 + JS (ES6+)  |
+                      +--------------+--------------+
+                                     |
+                                REST API (JWT)
+                                     v
+                      +-----------------------------+
+                      |    Backend (Node.js/Express)|
+                      +--------------+--------------+
+                                     |
+         +---------------------------+---------------------------+
+         |                                                       |
+         v                                                       v
++------------------+                                   +-------------------+
+|  PostgreSQL DB   |                                   |  WhatsApp Web.js  |
+|  (Neon/Render)   |                                   |  (Automated PDF)  |
++------------------+                                   +-------------------+
 ```
-### 4. Start the Application
-Run the backend server:
-```bash
-npm start
-```
-*The server will start on `http://localhost:3000` (or the port defined in your `.env`).*
-Open `frontend/index.html` in your browser (or access it via your local server if statically served) to access the Login page.
+
+### **Backend**
+- **Runtime**: Node.js (v18+)
+- **Framework**: Express.js v5
+- **Database**: PostgreSQL (via native `pg` connection pool)
+- **Security**: JSON Web Tokens (`jsonwebtoken`), `bcrypt` hashing, CORS, Auth Middlewares
+- **Automation**: `whatsapp-web.js` + Puppeteer headless client + `qrcode`
+
+### **Frontend**
+- **Core**: Vanilla HTML5, Modern CSS3 (Zebra tables, Glassmorphism, Micro-animations)
+- **Logic**: Modular JavaScript ES6+, Dynamic Chart.js integration
+- **Design System**: Tailored HSL green palette inspired by modern agricultural tech
+
 ---
-## 📂 Project Structure
-```text
+
+## 📁 Repository Structure
+
+```
 shri-amman-agro/
-│
 ├── backend/
-│   ├── controllers/      # Business logic (sales, products, dashboard, etc.)
-│   ├── middleware/       # JWT Authentication middleware
-│   ├── routes/           # Express API route definitions
-│   ├── db.js             # PostgreSQL connection pool setup
-│   └── server.js         # Entry point for the Express server
-│
+│   ├── config/
+│   │   └── db.js                 # PostgreSQL connection pool & auto schema builder
+│   ├── controllers/              # Request handlers for all modules
+│   │   ├── authController.js
+│   │   ├── customerController.js
+│   │   ├── companyController.js
+│   │   ├── productController.js
+│   │   ├── stockController.js
+│   │   ├── priceController.js
+│   │   ├── purchaseController.js
+│   │   ├── saleController.js
+│   │   ├── dashboardController.js
+│   │   └── whatsappController.js
+│   ├── middlewares/              # JWT bearer token verification
+│   │   └── authMiddleware.js
+│   ├── routes/                   # Express API routers
+│   ├── services/                 # WhatsApp client lifecycle & PDF engine
+│   │   └── whatsappService.js
+│   └── server.js                 # Express app initialization
 ├── frontend/
-│   ├── css/
-│   │   └── style.css     # Global UI styling and variables
-│   ├── js/               # Frontend logic for each respective HTML page
-│   ├── index.html        # Login Page
-│   ├── dashboard.html    # Main Analytics Dashboard
-│   ├── selling.html      # Point of Sale UI
-│   ├── purchasing.html   # Purchase Entry UI
-│   └── ...               # (customers, stock, products, companies, prices)
-│
-├── package.json          # Node dependencies and scripts
-└── .env                  # Environment configuration
+│   ├── css/                      # Global modern stylesheets & responsive tokens
+│   ├── js/                       # Page specific interactive scripts
+│   ├── index.html                # Login portal
+│   ├── register.html             # User registration
+│   ├── dashboard.html            # Analytics dashboard
+│   ├── customers.html            # Customer directory
+│   ├── companies.html            # Supplier directory
+│   ├── products.html             # Product management
+│   ├── stock.html                # Stock inventory
+│   ├── prices.html               # Price master
+│   ├── purchasing.html           # Vendor purchases
+│   └── selling.html              # POS & WhatsApp billing
+├── .env                          # Local environment variables
+├── package.json
+└── README.md
 ```
+
 ---
-## 🛡️ API Endpoints (Brief Overview)
-- **Auth:** `POST /api/auth/login`
-- **Dashboard:** `GET /api/dashboard/stats`, `GET /api/dashboard/sales-trend`, `GET /api/dashboard/purchase-vs-sales`
-- **Products:** `GET /api/products`, `POST /api/products`, `PUT /api/products/:id`
-- **Stock:** `GET /api/stock`, `GET /api/stock/:productId`
-- **Sales:** `POST /api/sales`, `GET /api/sales`
-- **Purchases:** `POST /api/purchases`, `GET /api/purchases`
-- **Customers:** `GET /api/customers`, `POST /api/customers/search`
+
+## 🗄️ Database Architecture
+
+The schema is automatically provisioned on server startup.
+
+```mermaid
+erDiagram
+    USERS ||--o{ SALES : creates
+    CUSTOMERS ||--o{ SALES : receives
+    COMPANIES ||--o{ PURCHASES : supplies
+    PRODUCTS ||--o{ PURCHASE_ITEMS : contains
+    PRODUCTS ||--o{ SALE_ITEMS : contains
+    PRODUCTS ||--|| STOCK : has
+    PRODUCTS ||--o{ PRODUCT_PRICES : priced_at
+
+    USERS {
+        int user_id PK
+        string full_name
+        string username
+        string password_hash
+        string role
+    }
+    PRODUCTS {
+        int product_id PK
+        string product_code
+        string product_name
+        string hsn_code
+        decimal gst_rate
+    }
+    STOCK {
+        int stock_id PK
+        int product_id FK
+        decimal quantity
+        decimal min_reorder_level
+    }
+```
+
 ---
-## 💡 Usage Workflow
-1. **Login:** Use administrator credentials to log in.
-2. **Setup Base Data:** Add Companies, then add Products.
-3. **Manage Prices:** Set the Buying and Selling prices in the Price Management tab.
-4. **Initial Stock:** Record incoming inventory via the **Purchasing** tab to establish stock.
-5. **Start Selling:** Use the **Selling** tab to check out customers, automatically updating stock levels and dashboard revenue.
+
+## 🔌 API Reference Highlights
+
+All endpoints expect JSON payloads and return JSON responses. Protected routes require `Authorization: Bearer <token>`.
+
+| Route | Method | Access | Function |
+|---|---|---|---|
+| `/api/auth/login` | `POST` | Public | Authenticate user & get JWT |
+| `/api/customers` | `GET / POST` | Protected | Fetch list or create customer |
+| `/api/products` | `GET / POST` | Protected | Retrieve catalog or add product |
+| `/api/stock` | `GET / PUT` | Protected | Fetch inventory or adjust stock level |
+| `/api/prices/:productId`| `GET / POST` | Protected | Fetch current selling price or add price entry |
+| `/api/sales` | `POST` | Protected | Finalize invoice, compute GST, adjust stock |
+| `/api/whatsapp/status` | `GET` | Protected | Connection status & live QR code |
+| `/api/whatsapp/logout` | `POST` | Protected | Unpair WhatsApp session & regenerate QR |
+
 ---
-*Designed & Developed for Shri Amman Agro Traders.*
-# shri-amman-agro
-Shri
+
+## ⚙️ Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18.0.0 or higher)
+- [PostgreSQL](https://www.postgresql.org/) (v14.0 or higher)
+
+### Local Setup Instructions
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yuvaakash1610/shri-amman-agro.git
+   cd shri-amman-agro
+   ```
+
+2. **Install project dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**
+   Create a `.env` file in the root directory:
+   ```env
+   PORT=3000
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=shri_amman_agro
+   JWT_SECRET=your_super_secret_jwt_key
+   ```
+
+4. **Initialize Database**
+   Create the database in PostgreSQL:
+   ```sql
+   CREATE DATABASE shri_amman_agro;
+   ```
+   *(Tables are automatically created when you start the server)*
+
+5. **Run the Application**
+   ```bash
+   npm start
+   ```
+   Open `http://localhost:3000` in your browser.
+
+---
+
+## 🚀 Free Deployment Guide
+
+You can deploy the complete stack for **100% FREE** using Render and Neon PostgreSQL:
+
+### Step 1: Deploy Database (Neon.tech - Recommended Free PostgreSQL)
+1. Go to [Neon.tech](https://neon.tech/) and create a free PostgreSQL database instance.
+2. Copy your **PostgreSQL Connection String** (e.g. `postgres://user:password@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require`).
+
+### Step 2: Deploy Backend (Render.com)
+1. Push your code to a GitHub repository (`https://github.com/yuvaakash1610/shri-amman-agro`).
+2. Go to [Render.com](https://render.com/) and create a new **Web Service**.
+3. Connect your GitHub repo `yuvaakash1610/shri-amman-agro`.
+4. Set Build Command: `npm install`
+5. Set Start Command: `node backend/server.js`
+6. Add Environment Variables on Render:
+   - `PORT` = `3000`
+   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT` (or paste full `DATABASE_URL` from Neon)
+   - `JWT_SECRET` = `your_secure_secret_key`
+
+### Step 3: Serve Frontend
+- Render automatically serves static HTML/CSS/JS frontend files out-of-the-box directly from the backend server!
+
+---
+
+## 🧑‍💻 Author & Developer
+
+<div align="center">
+
+### **Yuvaakash Kannan**
+*Full Stack Developer & Software Engineer*
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Yuvaakash_Kannan-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/yuvaakash-kannan-450751360/)
+[![GitHub](https://img.shields.io/badge/GitHub-yuvaakash1610-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yuvaakash1610)
+
+</div>
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for <b>Shri Amman Agro Traders</b>. ISC Licensed.</sub>
+</div>

@@ -135,7 +135,7 @@ app.use((err, req, res, next) => {
 
 initializeDatabase()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
       // Initialize WhatsApp Client in the background
       setTimeout(() => {

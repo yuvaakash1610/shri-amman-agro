@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -63,7 +64,7 @@
         .stat-card {
             background: var(--white); border-radius: 16px; padding: 20px 22px;
             box-shadow: var(--card-shadow); border: 1px solid var(--border);
-            transition: transform 0.2s; position: relative; overflow: hidden;
+            transition: transform 0.2s; position: relative;
         }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary); border-radius: 16px 16px 0 0; }
         .stat-card.accent::before { background: var(--accent); }
@@ -77,6 +78,155 @@
         .stat-value.money { font-size: 1.45rem; }
         .stat-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
 
+        /* Interactive Cards & Popovers */
+        .stat-card.clickable-card {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card.clickable-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(47,107,56,0.18);
+            border-color: var(--primary);
+        }
+        .stat-card.clickable-card .click-hint {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card.hover-detail-card {
+            position: relative;
+            cursor: pointer;
+            overflow: visible !important;
+        }
+        .stat-card.hover-detail-card:hover {
+            z-index: 100;
+        }
+
+        .hover-popover {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            width: 340px;
+            max-width: calc(100vw - 32px);
+            background: var(--white);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+            z-index: 1000;
+            text-align: left;
+        }
+        .hover-popover::before {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 12px;
+            height: 12px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            border-left: 1px solid var(--border);
+            z-index: 1001;
+        }
+        .stat-card.hover-detail-card:hover .hover-popover {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .popover-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .popover-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .popover-badge {
+            background: #E6F0E7;
+            color: var(--primary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .popover-list {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+        .popover-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .popover-list::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        .popover-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #F9FAFB;
+            border-radius: 8px;
+            border: 1px solid #F3F4F6;
+            font-size: 0.85rem;
+        }
+        .popover-item:hover {
+            background: #F3F7F3;
+        }
+        .popover-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .popover-item-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        .popover-item-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .popover-item-stat {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .hover-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         /* Section layout */
         .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
         .section-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
@@ -87,12 +237,14 @@
         .card-title span.badge { font-size: 0.75rem; background: #e9f5ea; color: var(--primary); padding: 2px 8px; border-radius: 999px; font-weight: 600; }
 
         /* Tables */
-        .table-wrap { overflow-x: auto; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: #ffffff; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { background: #f7fbf7; color: #4b5563; font-weight: 600; padding: 10px 12px; text-align: left; border-bottom: 2px solid #e8f0e8; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; }
-        td { padding: 11px 12px; border-bottom: 1px solid #f0f4f0; vertical-align: middle; }
+        th { background: #E8F2E9; color: #1F3822; font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 2px solid #C8E0CB; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 11px 12px; border-bottom: 1px solid #E5EFE6; vertical-align: middle; }
+        tbody tr:nth-child(even) td { background-color: #FFFFFF; }
+        tbody tr:nth-child(odd) td { background-color: #F4F8F4; }
+        tbody tr:hover td { background-color: #E2EFE3 !important; transition: background-color 0.15s ease-in-out; }
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafcfa; }
         .rank { font-weight: 700; color: var(--muted); width: 28px; }
         .rank.top { color: var(--accent); }
 
@@ -118,6 +270,37 @@
             .page-header h1 { font-size: 1.5rem; }
         }
         @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        /* Toast notification */
+        #wa-toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            min-width: 240px;
+            max-width: 360px;
+        }
+        #wa-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        #wa-toast.toast-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        #wa-toast.toast-warning { background: #fef3c7; color: #78350f; border: 1px solid #fde68a; }
+        #wa-toast.toast-info    { background: #e0f2fe; color: #0c4a6e; border: 1px solid #bae6fd; }
+        #wa-toast.toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
     </style>
 </head>
 <body>
@@ -171,7 +354,10 @@
                     <img id="wa-qr-img" src="" alt="WhatsApp QR Code" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border);">
                     <p style="font-size: 0.85rem; color: var(--muted); margin-top: 10px;">Scan this QR code with WhatsApp on your phone (Linked Devices).</p>
                 </div>
-                <button id="wa-refresh-btn" class="logout-btn" style="background: var(--bg); color: var(--text); border-color: var(--border); margin-top: 15px;">Refresh Status</button>
+                <div style="display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                    <button id="wa-refresh-btn" class="logout-btn" style="background: var(--bg); color: var(--text); border-color: var(--border);">Refresh Status</button>
+                    <button id="wa-logout-btn" class="logout-btn" style="background: #fef2f2; color: #b91c1c; border-color: #fecaca; display: none;">Logout WhatsApp</button>
+                </div>
             </div>
         </div>
     </div>
@@ -232,6 +418,9 @@
     </div>
 </div>
 
+<div id="wa-toast"></div>
+
+<script src="js/nav.js"></script>
 <script src="js/dashboard.js"></script>
 </body>
 </html>

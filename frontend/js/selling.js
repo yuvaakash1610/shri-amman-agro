@@ -65,25 +65,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // ── Navbar ────────────────────────────────────────────────────────────────
-    const navItems = [
-        { label: 'Dashboard', href: 'dashboard.html' },
-        { label: 'Customers', href: 'customers.html' },
-        { label: 'Companies', href: 'companies.html' },
-        { label: 'Products', href: 'products.html' },
-        { label: 'Stock Management', href: 'stock.html' },
-        { label: 'Purchasing', href: 'purchasing.html' },
-        { label: 'Selling', href: 'selling.html' },
-        { label: 'Price Management', href: 'prices.html' },
-        { label: 'Logout', href: '#' }
-    ];
     const renderNav = () => {
-        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        topNav.innerHTML = `<div class="navbar-brand" style="display:flex;align-items:center;gap:8px;"><img src="images/logo.png" style="height:32px;width:32px;object-fit:contain;"> Shri Amman Agro</div>` +
-            navItems.map(item => {
-                const isActive = currentPage === item.href;
-                const isLogout = item.label === 'Logout';
-                return `<a class="nav-link${isActive ? ' active' : ''}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
-            }).join('');
+        if (window.renderGlobalNav) window.renderGlobalNav();
     };
 
     // ── Load Form Data ────────────────────────────────────────────────────────
@@ -161,6 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cartStockIndicator.className   = 'stock-indicator';
         cartQtyInput.disabled = true;
         cartQtyInput.value    = '';
+        cartPriceInput.value  = '';
         cartQtyInput.removeAttribute('max');
         addToCartBtn.disabled = true;
 
@@ -197,13 +181,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cartStockIndicator.textContent = 'OUT OF STOCK!';
                 cartStockIndicator.className   = 'stock-indicator out-stock';
             }
-            // Auto-fill selling price
+
+            // Auto-fill default selling price from Price Management
             const priceRes = await fetch(`${apiBaseUrl}/api/prices/${pid}`, { headers: { Authorization: `Bearer ${token}` } });
             if (priceRes.ok) {
-                const pd = await priceRes.json();
-                if (pd && pd.selling_price) cartPriceInput.value = pd.selling_price;
+                const pricesData = await priceRes.json();
+                let activePriceRecord = null;
+
+                if (Array.isArray(pricesData) && pricesData.length > 0) {
+                    activePriceRecord = pricesData.find(p => p.is_active === true || p.is_active === 'true') || pricesData[0];
+                } else if (pricesData && typeof pricesData === 'object') {
+                    activePriceRecord = pricesData;
+                }
+
+                if (activePriceRecord && activePriceRecord.selling_price !== undefined && activePriceRecord.selling_price !== null) {
+                    cartPriceInput.value = parseFloat(activePriceRecord.selling_price);
+                } else if (prod && prod.selling_price !== undefined && prod.selling_price !== null) {
+                    cartPriceInput.value = parseFloat(prod.selling_price);
+                }
+            } else if (prod && prod.selling_price !== undefined && prod.selling_price !== null) {
+                cartPriceInput.value = parseFloat(prod.selling_price);
             }
-        } catch { cartStockIndicator.textContent = 'Error checking stock.'; cartStockIndicator.className = 'stock-indicator out-stock'; }
+        } catch (err) {
+            console.error('Error fetching stock or price:', err);
+            cartStockIndicator.textContent = 'Error checking stock/price.';
+            cartStockIndicator.className = 'stock-indicator out-stock';
+        }
     });
 
     // ── Add to Cart ───────────────────────────────────────────────────────────

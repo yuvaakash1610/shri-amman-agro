@@ -35,25 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup Date
     document.getElementById('purchaseDate').valueAsDate = new Date();
 
-    const navItems = [
-        { label: 'Dashboard', href: 'dashboard.html' },
-        { label: 'Customers', href: 'customers.html' },
-        { label: 'Companies', href: 'companies.html' },
-        { label: 'Products', href: 'products.html' },
-        { label: 'Stock Management', href: 'stock.html' },
-        { label: 'Purchasing', href: 'purchasing.html' },
-        { label: 'Selling', href: 'selling.html' },
-        { label: 'Price Management', href: 'prices.html' },
-        { label: 'Logout', href: '#' }
-    ];
-
     const renderNav = () => {
-        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        topNav.innerHTML = `<div class="navbar-brand" style="display:flex; align-items:center; gap:8px;"><img src="images/logo.png" style="height:32px; width:32px; object-fit:contain;"> Shri Amman Agro</div>` + navItems.map((item) => {
-            const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
-            const isLogout = item.label === 'Logout';
-            return `<a class="nav-link${isActive ? ' active' : ''}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
-        }).join('');
+        if (window.renderGlobalNav) window.renderGlobalNav();
     };
 
     const formatCurrency = (amount) => {

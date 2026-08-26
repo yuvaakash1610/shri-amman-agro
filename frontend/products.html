@@ -23,13 +23,19 @@
         .button-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
         .secondary-btn { background: white; color: var(--primary-color); border: 1px solid var(--border-color); padding: 0.8rem 1rem; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; }
         .secondary-btn:hover { background: #f3f7f3; }
-        .table-wrap { overflow-x: auto; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); background: #ffffff; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #edf2ed; font-size: 0.95rem; }
-        th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
-        .actions button { margin-right: 6px; border: none; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-family: inherit; }
-        .edit-btn { background: #e8f2eb; color: var(--primary-color); }
-        .delete-btn { background: #fde8e8; color: #b91c1c; }
+        th { background: #E8F2E9; color: #1F3822; font-weight: 700; padding: 12px 10px; border-bottom: 2px solid #C8E0CB; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.04em; }
+        td { padding: 12px 10px; border-bottom: 1px solid #E5EFE6; font-size: 0.92rem; vertical-align: middle; text-align: left; }
+        tbody tr:nth-child(even) td { background-color: #FFFFFF; }
+        tbody tr:nth-child(odd) td { background-color: #F4F8F4; }
+        td.actions { white-space: nowrap; vertical-align: middle; }
+        .actions button { display: inline-flex; align-items: center; justify-content: center; border: none; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; white-space: nowrap; margin-right: 6px; vertical-align: middle; }
+        .actions button:last-child { margin-right: 0; }
+        .edit-btn { background: #e8f2eb; color: var(--primary-color); transition: background 0.2s; }
+        .edit-btn:hover { background: #d3e7d8; }
+        .delete-btn { background: #fde8e8; color: #b91c1c; transition: background 0.2s; }
+        .delete-btn:hover { background: #fbd0d0; }
         .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
         .search-row input, .search-row select { flex: 1; min-width: 180px; }
         .empty-state { text-align: center; color: var(--text-muted); padding: 24px 0; }
@@ -132,6 +138,7 @@
         </div>
     </div>
 
+    <script src="js/nav.js"></script>
     <script src="js/products.js"></script>
 </body>
 </html>

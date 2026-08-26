@@ -25,10 +25,13 @@
         .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; font-family: inherit; font-size: 0.95rem; background: #fbfdfb; }
         .form-grid input[readonly] { background: #eef2ef; color: #6b7280; cursor: not-allowed; }
         .button-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-        .table-wrap { overflow-x: auto; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); background: #ffffff; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #edf2ed; font-size: 0.92rem; }
-        th { background: #f7fbf7; color: #4b5563; font-weight: 600; }
+        th { background: #E8F2E9; color: #1F3822; font-weight: 700; padding: 10px 8px; border-bottom: 2px solid #C8E0CB; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.04em; }
+        td { padding: 10px 8px; border-bottom: 1px solid #E5EFE6; font-size: 0.92rem; vertical-align: middle; text-align: left; }
+        tbody tr:nth-child(even) td { background-color: #FFFFFF; }
+        tbody tr:nth-child(odd) td { background-color: #F4F8F4; }
+        tbody tr:hover td { background-color: #E2EFE3 !important; transition: background-color 0.15s ease-in-out; }
         .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
         .search-row input, .search-row select { flex: 1; min-width: 180px; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border-color); }
         .empty-state { text-align: center; color: var(--text-muted); padding: 24px 0; }
@@ -313,6 +316,7 @@
         </div>
     </div>
 
+    <script src="js/nav.js"></script>
     <script src="js/selling.js"></script>
 </body>
 </html>

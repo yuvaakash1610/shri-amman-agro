@@ -17,43 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiBaseUrl = getApiBaseUrl();
     const topNav = document.getElementById('top-nav');
 
-    // Navigation setup
-    const navItems = [
-        { label: 'Dashboard', href: 'dashboard.html' },
-        { label: 'Customers', href: 'customers.html' },
-        { label: 'Companies', href: 'companies.html' },
-        { label: 'Products', href: 'products.html' },
-        { label: 'Stock Management', href: 'stock.html' },
-        { label: 'Purchasing', href: 'purchasing.html' },
-        { label: 'Selling', href: 'selling.html' },
-        { label: 'Price Management', href: 'prices.html' },
-        { label: 'Logout', href: '#' }
-    ];
-
     const renderNav = () => {
-        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-        
-        topNav.innerHTML = `<div class="navbar-brand" style="display:flex; align-items:center; gap:8px;"><img src="images/logo.png" style="height:32px; width:32px; object-fit:contain;"> Shri Amman Agro</div>` + 
-        navItems.map((item) => {
-            const isActive = currentPage === item.href || (currentPage === '' && item.href === 'dashboard.html');
-            const isLogout = item.label === 'Logout';
-            const classes = `nav-link ${isActive ? 'active' : ''} ${isLogout ? 'logout' : ''}`;
-            return `<a class="${classes}" href="${item.href}" data-logout="${isLogout}">${item.label}</a>`;
-        }).join('');
+        if (window.renderGlobalNav) {
+            window.renderGlobalNav();
+        }
     };
 
     renderNav();
-
-    // Event listener for logout
-    topNav.addEventListener('click', (event) => {
-        const link = event.target.closest('a[data-logout="true"]');
-        if (link) {
-            event.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html';
-        }
-    });
 
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
@@ -68,7 +38,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
     };
 
-    const renderStats = (stats, profitData = null) => {
+    const renderAvailableStockList = (items) => {
+        if (!items || items.length === 0) {
+            return '<div class="empty-state" style="padding:12px;">No stock details available</div>';
+        }
+        return items.map(item => {
+            const qty = Number(item.quantity || 0);
+            let badgeStyle = 'color: #065f46; background: #d1fae5;';
+            if (qty === 0) badgeStyle = 'color: #991b1b; background: #fee2e2;';
+            else if (qty < 5) badgeStyle = 'color: #92400e; background: #fef3c7;';
+
+            return `
+                <div class="popover-item">
+                    <div class="popover-item-info">
+                        <span class="popover-item-name">${item.product_name}</span>
+                        <span class="popover-item-sub">${item.product_code || ''} ${item.category_name ? '&bull; ' + item.category_name : ''}</span>
+                    </div>
+                    <div class="popover-item-stat">
+                        <span class="pill" style="${badgeStyle}">${qty} ${item.unit || ''}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const renderStats = (stats, profitData = null, stockDetails = []) => {
         const grid = document.getElementById('stats-grid');
         
         const todayProf = (profitData && profitData.today) ? profitData.today.profit : 0;
@@ -79,15 +73,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const totalMargin = (profitData && profitData.total) ? profitData.total.margin : 0;
 
         grid.innerHTML = `
-            <div class="stat-card">
+            <div class="stat-card clickable-card" id="card-total-products" onclick="window.location.href='products.html'" title="Click to view all products">
                 <div class="stat-icon">📦</div>
                 <div class="stat-label">Total Products</div>
                 <div class="stat-value">${stats.totalProducts}</div>
+                <div class="click-hint">View Products &rarr;</div>
             </div>
-            <div class="stat-card accent">
+            <div class="stat-card accent hover-detail-card" id="card-stock-available">
                 <div class="stat-icon">✅</div>
                 <div class="stat-label">Stock Available</div>
                 <div class="stat-value">${stats.totalStockAvailable}</div>
+                <div class="hover-hint">🔍 Hover for details</div>
+                <div class="hover-popover" id="popover-stock-available">
+                    <div class="popover-header">
+                        <div class="popover-title">📦 Stock Available Breakdown</div>
+                        <span class="popover-badge">${stats.totalStockAvailable} Units</span>
+                    </div>
+                    <div class="popover-list">
+                        ${renderAvailableStockList(stockDetails)}
+                    </div>
+                </div>
             </div>
             <div class="stat-card success">
                 <div class="stat-icon">🛒</div>
@@ -172,8 +177,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lowStockData = lowStockRes.ok ? await lowStockRes.json() : [];
             const profitData = profitRes.ok ? await profitRes.json() : null;
 
-            // Re-render stats cards with profit figures
-            renderStats(stats, profitData);
+            // Re-render stats cards with profit figures and stock details
+            renderStats(stats, profitData, stockData);
 
             // 1. Stock Chart (Doughnut)
             if (stockData.length > 0) {
@@ -298,46 +303,114 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    const checkWhatsAppStatus = async () => {
+    // ── Toast helper ──────────────────────────────────────────────────────────
+    let waToastTimer = null;
+    const showWaToast = (message, type = 'info', duration = 3500) => {
+        const toast = document.getElementById('wa-toast');
+        if (!toast) return;
+        clearTimeout(waToastTimer);
+        toast.textContent = message;
+        toast.className = `show toast-${type}`;
+        waToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, duration);
+    };
+
+    // ── WhatsApp status check ─────────────────────────────────────────────────
+    const checkWhatsAppStatus = async (showToast = false) => {
         try {
             const res = await fetch(`${apiBaseUrl}/api/whatsapp/status`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
-            
+
             const statusText = document.getElementById('wa-status-text');
             const qrContainer = document.getElementById('wa-qr-container');
             const qrImg = document.getElementById('wa-qr-img');
             const refreshBtn = document.getElementById('wa-refresh-btn');
-            
+            const logoutBtn = document.getElementById('wa-logout-btn');
+
             if (data.ready) {
                 statusText.innerHTML = '<span style="color: #10B981;">✅ Linked and Ready</span>';
                 qrContainer.style.display = 'none';
-                refreshBtn.style.display = 'none';
+                refreshBtn.style.display = 'inline-block';
+                if (logoutBtn) logoutBtn.style.display = 'inline-block';
+                if (showToast) showWaToast('✅ WhatsApp Status: Linked and Ready', 'success');
             } else if (data.qr) {
-                statusText.innerHTML = '<span style="color: #F59E0B;">⚠️ Scan QR Code</span>';
+                statusText.innerHTML = '<span style="color: #F59E0B;">⚠️ Scan QR Code to link WhatsApp</span>';
                 qrImg.src = data.qr;
                 qrContainer.style.display = 'block';
                 refreshBtn.style.display = 'inline-block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (showToast) showWaToast('⚠️ WhatsApp Status: Not linked — scan QR code', 'warning');
             } else {
                 statusText.innerHTML = '<span style="color: #6B7280;">⏳ Initializing WhatsApp...</span>';
                 qrContainer.style.display = 'none';
                 refreshBtn.style.display = 'inline-block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (showToast) showWaToast('⏳ WhatsApp Status: Initializing, please wait...', 'info');
             }
         } catch (error) {
             console.error('Error checking WA status:', error);
             document.getElementById('wa-status-text').innerHTML = '<span style="color: #EF4444;">❌ WhatsApp Service Offline</span>';
+            if (showToast) showWaToast('❌ WhatsApp Service Offline', 'error');
         }
     };
 
-    document.getElementById('wa-refresh-btn').addEventListener('click', checkWhatsAppStatus);
+    // ── WhatsApp logout ───────────────────────────────────────────────────────
+    const logoutWhatsApp = async () => {
+        if (!confirm('Are you sure you want to log out of WhatsApp? A new QR code will be generated.')) return;
+
+        const statusText = document.getElementById('wa-status-text');
+        const qrContainer = document.getElementById('wa-qr-container');
+        const logoutBtn = document.getElementById('wa-logout-btn');
+        const refreshBtn = document.getElementById('wa-refresh-btn');
+
+        // Immediately reset UI so user sees change right away
+        statusText.innerHTML = '<span style="color: #F59E0B;">⏳ Logging out of WhatsApp...</span>';
+        qrContainer.style.display = 'none';
+        if (logoutBtn) { logoutBtn.disabled = true; logoutBtn.style.display = 'none'; }
+        if (refreshBtn) refreshBtn.style.display = 'none';
+        showWaToast('⏳ Logging out of WhatsApp...', 'info', 5000);
+
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/whatsapp/logout`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            await res.json();
+            showWaToast('✅ Logged out of WhatsApp successfully!', 'success', 4000);
+            // Poll until QR code appears (backend needs ~2-3s to reinitialize)
+            let attempts = 0;
+            const pollForQR = setInterval(async () => {
+                attempts++;
+                await checkWhatsAppStatus(false);
+                const currentText = document.getElementById('wa-status-text').innerText;
+                if (currentText.includes('Scan') || attempts >= 12) {
+                    clearInterval(pollForQR);
+                    if (logoutBtn) logoutBtn.disabled = false;
+                    if (refreshBtn) refreshBtn.style.display = 'inline-block';
+                }
+            }, 2500);
+        } catch (error) {
+            console.error('Logout WhatsApp error:', error);
+            statusText.innerHTML = '<span style="color: #EF4444;">❌ Failed to log out of WhatsApp</span>';
+            if (logoutBtn) { logoutBtn.disabled = false; logoutBtn.style.display = 'inline-block'; }
+            if (refreshBtn) refreshBtn.style.display = 'inline-block';
+            showWaToast('❌ Failed to log out of WhatsApp', 'error');
+        }
+    };
+
+    document.getElementById('wa-refresh-btn').addEventListener('click', () => checkWhatsAppStatus(true));
+    const waLogoutBtn = document.getElementById('wa-logout-btn');
+    if (waLogoutBtn) waLogoutBtn.addEventListener('click', logoutWhatsApp);
 
     fetchDashboardData();
-    checkWhatsAppStatus();
+    checkWhatsAppStatus(false);
 
     // Auto refresh WA status every 5 seconds if not ready
     setInterval(() => {
-        if (document.getElementById('wa-status-text').innerText.includes('Scan') || 
-            document.getElementById('wa-status-text').innerText.includes('Initializing')) {
-            checkWhatsAppStatus();
+        const txt = document.getElementById('wa-status-text').innerText;
+        if (txt.includes('Scan') || txt.includes('Initializing')) {
+            checkWhatsAppStatus(false);
         }
     }, 5000);
 });

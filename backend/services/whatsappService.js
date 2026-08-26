@@ -1,22 +1,34 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
+const { execSync } = require('child_process');
 const path = require('path');
 
 let client;
 let qrCodeDataURL = null;
 let isReady = false;
-let isInitializing = false;   // guard: prevent double-init
+let isInitializing = false;
 let initRetryTimer = null;
+let intentionalLogout = false;   // ← blocks auto-reconnect during deliberate logout
 
 const DATA_PATH = path.join(__dirname, '../../.wwebjs_auth');
 const SESSION_ID = 'saat-agro';
 
+// Terminate any lingering Chrome processes using the session directory on Windows
+const killOrphanChromeProcesses = () => {
+    if (process.platform === 'win32') {
+        try {
+            execSync(`powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"name = 'chrome.exe'\\" | Where-Object { $_.CommandLine -like '*session-${SESSION_ID}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"`, { stdio: 'ignore' });
+        } catch (_) {}
+    }
+};
+
 // Recursively wipe all Puppeteer lock / socket files from the session directory
 const clearLockFiles = () => {
     try {
+        killOrphanChromeProcesses();
         if (!fs.existsSync(DATA_PATH)) return;
-        const targets = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile'];
+        const targets = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile', 'DevToolsActivePort'];
         const walkAndDelete = (dir) => {
             let entries = [];
             try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
@@ -73,6 +85,10 @@ const buildClient = () => {
 
     client = new Client({
         authStrategy,
+        webVersionCache: {
+            type: 'remote',
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
+        },
         puppeteer: {
             headless: true,
             args: [
@@ -92,6 +108,11 @@ const buildClient = () => {
     });
 
     client.on('ready', () => {
+        if (intentionalLogout) {
+            // We just logged out — ignore stale ready event from old client
+            console.log('WhatsApp: Ignoring ready event — intentional logout in progress.');
+            return;
+        }
         console.log('WhatsApp Client is ready!');
         isReady = true;
         isInitializing = false;
@@ -99,6 +120,7 @@ const buildClient = () => {
     });
 
     client.on('authenticated', () => {
+        if (intentionalLogout) return;
         console.log('WhatsApp Client is authenticated');
     });
 
@@ -114,14 +136,23 @@ const buildClient = () => {
         isReady = false;
         isInitializing = false;
         clearTimeout(initRetryTimer);
+
+        if (intentionalLogout) {
+            // ← Do NOT auto-reconnect; logout handler manages reinitialization
+            console.log('WhatsApp: Skipping auto-reconnect (intentional logout).');
+            return;
+        }
+
+        // Unexpected disconnect — schedule reconnect
         setTimeout(() => clearSessionDir(), 2000);
         initRetryTimer = setTimeout(() => tryInitialize(), 10000);
     });
 };
 
 const tryInitialize = () => {
-    if (isInitializing) return;   // prevent concurrent init attempts
+    if (isInitializing) return;
     isInitializing = true;
+    intentionalLogout = false;   // clear logout flag when new init starts
     clearLockFiles();
     buildClient();
     client.initialize().catch((err) => {
@@ -137,7 +168,7 @@ const tryInitialize = () => {
 };
 
 const initWhatsApp = () => {
-    if (isInitializing || isReady) return;   // only ever init once
+    if (isInitializing || isReady) return;
     console.log('Initializing WhatsApp Service...');
     tryInitialize();
 };
@@ -157,4 +188,52 @@ const sendDocument = async (phoneNumber, base64Data, filename, message) => {
     return { success: true };
 };
 
-module.exports = { initWhatsApp, getStatus, sendDocument };
+const logoutWhatsApp = async () => {
+    console.log('WhatsApp: Logout requested by user.');
+
+    // Set flag FIRST so disconnected handler won't auto-reconnect
+    intentionalLogout = true;
+    isReady = false;
+    qrCodeDataURL = null;
+    isInitializing = false;
+    clearTimeout(initRetryTimer);
+
+    // 1. Destroy the Puppeteer browser (releases file locks on Windows)
+    if (client) {
+        try { await client.destroy(); } catch (_) {}
+        client = null;
+    }
+
+    // 2. Kill any orphaned Chrome processes that still hold locks
+    killOrphanChromeProcesses();
+    if (process.platform === 'win32') {
+        try {
+            const { execSync } = require('child_process');
+            execSync(`powershell -NoProfile -Command "Stop-Process -Name 'chrome' -Force -ErrorAction SilentlyContinue"`, { stdio: 'ignore' });
+        } catch (_) {}
+    }
+
+    // 3. Wait for OS to release file handles, then wipe session directory
+    await new Promise(r => setTimeout(r, 3000));
+    const sessionPath = path.join(DATA_PATH, `session-${SESSION_ID}`);
+    if (process.platform === 'win32') {
+        try {
+            const { execSync } = require('child_process');
+            execSync(`powershell -NoProfile -Command "Remove-Item -Path '${sessionPath.replace(/\\/g, '\\\\')}' -Recurse -Force -ErrorAction SilentlyContinue"`, { stdio: 'ignore' });
+            console.log('WhatsApp: session directory wiped via PowerShell');
+        } catch (_) {
+            clearSessionDir();
+        }
+    } else {
+        clearSessionDir();
+    }
+
+    // 4. Re-initialize fresh so QR code appears
+    await new Promise(r => setTimeout(r, 1500));
+    console.log('WhatsApp: re-initializing after logout (fresh QR expected)...');
+    tryInitialize();
+
+    return { success: true, message: 'Logged out of WhatsApp successfully.' };
+};
+
+module.exports = { initWhatsApp, getStatus, sendDocument, logoutWhatsApp };

@@ -88,18 +88,42 @@ const getLowStockProducts = async (req, res) => {
 const getStockByProduct = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT pr.product_name, pr.product_code, s.quantity,
-             cat.category_name
-      FROM stock s
-      JOIN products pr ON pr.product_id = s.product_id
+      SELECT pr.product_id, pr.product_name, pr.product_code,
+             COALESCE(s.quantity, 0) AS quantity,
+             cat.category_name, u.abbreviation AS unit
+      FROM products pr
+      LEFT JOIN stock s ON s.product_id = pr.product_id
       LEFT JOIN categories cat ON cat.category_id = pr.category_id
-      ORDER BY s.quantity DESC
-      LIMIT 20
+      LEFT JOIN units u ON u.unit_id = pr.unit_id
+      WHERE pr.status = 'Active'
+      ORDER BY s.quantity DESC NULLS LAST, pr.product_name ASC
     `);
     res.json(result.rows);
   } catch (error) {
     console.error('Stock by product error:', error);
     res.status(500).json({ message: 'Failed to load stock by product.' });
+  }
+};
+
+const getStockSoldDetails = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT pr.product_id, pr.product_name, pr.product_code,
+             COALESCE(SUM(si.quantity), 0) AS total_sold,
+             COALESCE(SUM(si.total_amount), 0) AS total_revenue,
+             cat.category_name, u.abbreviation AS unit
+      FROM products pr
+      JOIN sale_items si ON si.product_id = pr.product_id
+      LEFT JOIN categories cat ON cat.category_id = pr.category_id
+      LEFT JOIN units u ON u.unit_id = pr.unit_id
+      GROUP BY pr.product_id, pr.product_name, pr.product_code, cat.category_name, u.abbreviation
+      HAVING COALESCE(SUM(si.quantity), 0) > 0
+      ORDER BY total_sold DESC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Stock sold details error:', error);
+    res.status(500).json({ message: 'Failed to load stock sold details.' });
   }
 };
 
@@ -271,6 +295,7 @@ module.exports = {
   getTopSellingProducts,
   getLowStockProducts,
   getStockByProduct,
+  getStockSoldDetails,
   getSalesTrend,
   getPurchaseVsSales,
   getProfitAnalytics,
