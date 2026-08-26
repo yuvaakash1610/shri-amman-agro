@@ -14,7 +14,7 @@
 
 A state-of-the-art, full-stack enterprise web application designed for **Shri Amman Agro Traders** to automate inventory management, sales invoicing, purchase tracking, customer analytics, GST calculations, and automated WhatsApp invoice dispatching.
 
-[Explore Features](#-key-features) • [Deployment Guide](#-free-deployment-guide) • [Setup & Installation](#-getting-started) • [API Reference](#-api-endpoints)
+
 
 </div>
 
