@@ -1,100 +1,143 @@
 <div align="center">
 
-# 🌾 Shri Amman Agro Traders
-### *Smart Enterprise Resource & POS Management System*
+# 🌾 Shri Amman Agro Traders — POS & ERP System
 
-[![Node.js](https://img.shields.io/badge/Node.js-v24.0+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-v5.0-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+### *A production-grade full-stack web application built from scratch*
+
+[![Node.js](https://img.shields.io/badge/Node.js-v24+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-v5-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Cloud-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
-[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
-[![WhatsApp Cloud API](https://img.shields.io/badge/WhatsApp_Cloud_API-Meta_Business-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://developers.facebook.com/docs/whatsapp/cloud-api)
+[![Vercel](https://img.shields.io/badge/Vercel-Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+[![OpenWA](https://img.shields.io/badge/OpenWA-Railway_Hosted-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://openwa.dev/)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=for-the-badge)](https://opensource.org/licenses/ISC)
 
----
+<br>
 
-A full-stack, enterprise POS and inventory management web application engineered for **Shri Amman Agro Traders** to automate sales billing, stock tracking, purchase auditing, customer analytics, GST calculations, and automated WhatsApp invoice delivery in both local and cloud environments.
+> **🎓 A real-world engineering project** — Not a tutorial. Not a CRUD demo.
+> This is a fully deployed, production-running business application with real users, real data, and real WhatsApp invoice delivery.
 
 </div>
 
 ---
 
-## ⚡ Key Features
+## 🚀 What is This?
 
-| Module | Description |
-|---|---|
-| 🔐 **Authentication & Security** | JWT authentication, bcrypt password hashing, role-based access control (Admin, Manager, Staff), and secure self-service password reset. |
-| 📊 **Real-time Analytics Dashboard** | Live KPIs, sales vs. purchase charts, low-stock warnings, hover breakdown popovers, and product margin profitability analytics. |
-| 🧾 **Smart POS & Billing** | Multi-item cart builder with automatic default selling prices, stock validation, and CGST/SGST tax breakdown. |
-| 💬 **Dual WhatsApp Engine** | **Cloud (Vercel)**: Official Meta WhatsApp Cloud API.<br>**Local**: `whatsapp-web.js` with live QR code pairing. |
-| 🖨️ **Print & PDF Invoicing** | Instant client-side A4 PDF generation (`html2pdf`) and 80mm thermal receipt printing (`window.print`). |
-| 👥 **Customer Directory** | Customer profiles with masked Aadhaar numbers, phone search, address records, and purchase history. |
-| 🏢 **Supplier & Vendor Hub** | Vendor directory with GSTIN numbers, contact persons, and purchase tracking. |
-| 📦 **Stock & Inventory Control** | Product categorization, unit masters, reorder alerts, and complete movement audit trails. |
-| 💰 **Price Management** | Dual purchase & selling price configuration with active/historical price logging. |
+A **full-stack Point of Sale (POS) and ERP system** built for a real agricultural trading business. It replaces a manual paper-based billing system with a fully digitized, cloud-deployed web app — complete with inventory management, GST billing, PDF invoice generation, and automated WhatsApp delivery.
+
+If you're an engineering student, this repo will show you:
+- How **real REST APIs** are structured and secured with JWT
+- How **serverless functions** work on Vercel with PostgreSQL (Neon)
+- How to build **multi-page web apps** without React/Angular (pure Vanilla JS)
+- How **WhatsApp automation** works in production using OpenWA over REST
+- How to **deploy and debug** a full-stack app on the cloud
 
 ---
 
-## 🛠️ Technology Architecture
+## ⚡ Feature Matrix
 
-```
-                       +---------------------------------------+
-                       |        Frontend (Vanilla Stack)       |
-                       |       HTML5 + CSS3 + JS (ES6+)        |
-                       +-------------------+-------------------+
-                                           |
-                                      REST API (JWT)
-                                           v
-                       +---------------------------------------+
-                       |        Backend (Node.js/Express)      |
-                       +-------------------+-------------------+
-                                           |
-           +-------------------------------+-------------------------------+
-           |                               |                               |
-           v                               v                               v
-+----------------------+       +-----------------------+       +-----------------------+
-|    PostgreSQL DB     |       | Meta WhatsApp Cloud   |       |   whatsapp-web.js     |
-| (Neon / Local PG)    |       |   API (Vercel Mode)   |       |     (Local Mode)      |
-+----------------------+       +-----------------------+       +-----------------------+
-```
-
-### **Backend**
-- **Runtime**: Node.js (v18+)
-- **Framework**: Express.js v5 (configured for long-running servers and Vercel serverless functions)
-- **Database**: PostgreSQL (via `pg` connection pool with SSL support)
-- **Security**: JSON Web Tokens (`jsonwebtoken`), `bcryptjs`, CORS middleware
-- **WhatsApp Services**:
-  - **Cloud**: Meta WhatsApp Business Platform Cloud API (`whatsappCloudService.js`)
-  - **Local**: `whatsapp-web.js` + Puppeteer headless client + `qrcode`
-
-### **Frontend**
-- **Core**: Semantic HTML5, Vanilla CSS3 (glassmorphism, zebra tables, micro-animations, print CSS)
-- **Logic**: Modular ES6+ JavaScript, Chart.js analytics, `html2pdf.js` client-side invoice generation
-- **Design System**: Tailored agricultural green palette with accessible contrast tokens
+| Module | What It Does | Stack Used |
+|---|---|---|
+| 🔐 **Auth & Security** | JWT login, bcrypt hashing, role-based access, password reset | `jsonwebtoken`, `bcryptjs` |
+| 📊 **Live Dashboard** | KPI cards, revenue charts, low-stock alerts, profit margins | `Chart.js`, custom REST aggregation |
+| 🧾 **POS & Billing** | Multi-item cart, stock validation, CGST/SGST tax engine | Vanilla JS, Express |
+| 💬 **WhatsApp Invoicing** | Auto-send PDF invoice to customer's WhatsApp number | OpenWA (Railway) + REST API |
+| 🖨️ **PDF & Thermal Print** | A4 PDF generation and 80mm thermal receipt printing | `html2pdf.js`, `window.print` |
+| 👥 **Customer CRM** | Profiles with masked Aadhaar, phone search, purchase history | PostgreSQL, REST |
+| 🏢 **Vendor Hub** | Supplier directory with GSTIN, contacts, purchase tracking | PostgreSQL, REST |
+| 📦 **Inventory Control** | Product catalogue, unit masters, stock movement audit trail | PostgreSQL, REST |
+| 💰 **Price Management** | Dual purchase/selling price config with historical logging | PostgreSQL, REST |
 
 ---
 
-## 📁 Repository Structure
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   CLIENT BROWSER                        │
+│          HTML5 + CSS3 + Vanilla ES6+ JavaScript         │
+│          Chart.js   │   html2pdf.js   │   fetch API     │
+└────────────────────┬────────────────────────────────────┘
+                     │  HTTPS / REST API (Bearer JWT)
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│              VERCEL SERVERLESS FUNCTIONS                 │
+│              Node.js + Express.js v5                     │
+│                                                         │
+│  /api/auth     /api/customers    /api/products          │
+│  /api/sales    /api/purchases    /api/stock             │
+│  /api/prices   /api/dashboard    /api/whatsapp          │
+│  JWT Middleware + Role-Based Access Control (RBAC)      │
+└──────────┬──────────────────────────┬───────────────────┘
+           │                          │
+           ▼                          ▼
+┌─────────────────┐        ┌──────────────────────────────┐
+│  NEON POSTGRES  │        │  OPENWA INSTANCE (Railway)   │
+│  Cloud Database │        │  WhatsApp Web REST Gateway   │
+│  Auto-migrated  │        │  Session: 9491efe3-...        │
+│  Tables on boot │        │  Phone:   +91 91760 18007    │
+└─────────────────┘        └──────────────────────────────┘
+```
+
+---
+
+## 🧠 Tech Stack — Deep Dive
+
+### Backend
+```
+Runtime:      Node.js v24+
+Framework:    Express.js v5 (serverless-compatible)
+Database:     PostgreSQL via pg pool (Neon Cloud with SSL)
+Auth:         JSON Web Tokens (HS256) + bcryptjs (salt=10)
+Middleware:   CORS, express.json (10MB limit for PDF base64)
+WhatsApp:     OpenWA REST API (self-hosted on Railway)
+```
+
+### Frontend
+```
+Core:         Semantic HTML5 + Vanilla CSS3 + ES6+ JavaScript
+Charts:       Chart.js (line, bar, doughnut)
+PDF:          html2pdf.js (client-side A4 + thermal 80mm)
+Design:       Glassmorphism, CSS custom properties, animations
+API Calls:    Fetch API with JWT Bearer token headers
+```
+
+### Infrastructure
+```
+Deployment:   Vercel (serverless edge functions)
+Database:     Neon Tech (PostgreSQL-compatible, always-on)
+WhatsApp:     Railway (OpenWA Docker container, WebSocket QR)
+CI/CD:        GitHub → Vercel auto-deploy on push to main
+```
+
+---
+
+## 📁 Project Structure
 
 ```
 shri-amman-agro/
+│
 ├── api/
-│   └── index.js                  # Vercel serverless entry point forwarding to Express app
+│   └── index.js                  # Vercel serverless entry → Express app
+│
 ├── backend/
 │   ├── config/
-│   │   └── db.js                 # PostgreSQL connection pool & auto-migration builder
-│   ├── controllers/              # Business logic controllers
-│   │   ├── authController.js     # Login, registration, password reset, getMe
-│   │   ├── customerController.js # Customer CRUD & secure search
-│   │   ├── companyController.js  # Vendor / company management
-│   │   ├── productController.js  # Products, categories, units
-│   │   ├── stockController.js    # Stock balances & movement logs
-│   │   ├── priceController.js    # Price masters & historical pricing
-│   │   ├── purchaseController.js # Vendor purchasing transactions
-│   │   ├── saleController.js     # POS sales & invoice creation
-│   │   └── dashboardController.js# Real-time analytics & KPIs
+│   │   └── db.js                 # pg Pool + auto-CREATE TABLE IF NOT EXISTS
+│   │
+│   ├── controllers/              # Pure business logic (no Express req/res coupling)
+│   │   ├── authController.js     # login, register, resetPassword, getMe
+│   │   ├── customerController.js # CRUD + secure Aadhaar-masked search
+│   │   ├── companyController.js  # Vendor / supplier management
+│   │   ├── productController.js  # Product catalog, categories, units
+│   │   ├── stockController.js    # Inventory levels + movement audit
+│   │   ├── priceController.js    # Dual price master + history log
+│   │   ├── purchaseController.js # Vendor purchases + stock replenishment
+│   │   ├── saleController.js     # POS sales, GST engine, invoice records
+│   │   └── dashboardController.js# Real-time KPIs + chart data aggregation
+│   │
 │   ├── middlewares/
-│   │   └── authMiddleware.js     # JWT Bearer token authentication & role checks
-│   ├── routes/                   # Express route definitions
+│   │   └── authMiddleware.js     # JWT verification + role enum check
+│   │
+│   ├── routes/                   # Express Router definitions (thin, just wires controllers)
 │   │   ├── authRoutes.js
 │   │   ├── customerRoutes.js
 │   │   ├── companyRoutes.js
@@ -104,132 +147,225 @@ shri-amman-agro/
 │   │   ├── purchaseRoutes.js
 │   │   ├── saleRoutes.js
 │   │   ├── dashboardRoutes.js
-│   │   └── whatsappRoutes.js     # Dynamic dispatcher (Cloud API vs. Local)
+│   │   └── whatsappRoutes.js     # POST /send  GET /status  POST /logout
+│   │
 │   ├── services/
-│   │   ├── whatsappCloudService.js # Official Meta WhatsApp Cloud API integration
-│   │   └── whatsappService.js      # Local whatsapp-web.js engine
-│   └── server.js                 # Core Express app & static route bindings
+│   │   ├── whatsappCloudService.js  # ← OpenWA REST client (active on Vercel)
+│   │   └── whatsappService.js       # ← Local whatsapp-web.js + Puppeteer QR
+│   │
+│   └── server.js                 # App bootstrap, middleware stack, static serve
+│
 ├── frontend/
 │   ├── css/
-│   │   └── style.css             # Main stylesheet & responsive layout tokens
-│   ├── js/                       # Page-specific frontend controllers
-│   │   ├── login.js
-│   │   ├── register.js
-│   │   ├── forgot-password.js
-│   │   ├── dashboard.js
-│   │   ├── customers.js
-│   │   ├── companies.js
-│   │   ├── products.js
-│   │   ├── stock.js
-│   │   ├── prices.js
+│   │   └── style.css             # Design system: tokens, glassmorphism, print CSS
+│   │
+│   ├── js/                       # One JS controller per page
+│   │   ├── login.js / register.js / forgot-password.js
+│   │   ├── dashboard.js          # Chart.js + KPIs + WA status
+│   │   ├── customers.js / companies.js
+│   │   ├── products.js / stock.js / prices.js
 │   │   ├── purchasing.js
-│   │   ├── selling.js
+│   │   ├── selling.js            # Cart engine + PDF gen + WA dispatch
 │   │   └── nav.js
-│   ├── images/
-│   │   └── logo.png
-│   ├── index.html                # Login page
-│   ├── register.html             # Account registration page
-│   ├── forgot-password.html      # Password reset page
-│   ├── dashboard.html            # Analytics dashboard
-│   ├── customers.html            # Customer directory
-│   ├── companies.html            # Supplier directory
-│   ├── products.html             # Product catalog
-│   ├── stock.html                # Stock inventory & movements
-│   ├── prices.html               # Price master
-│   ├── purchasing.html           # Purchases & stock replenishment
-│   └── selling.html              # POS, GST cart, PDF & WhatsApp billing
-├── vercel.json                   # Vercel serverless rewrite rules
+│   │
+│   ├── index.html                # Login
+│   ├── register.html
+│   ├── forgot-password.html      # Direct password reset (no email token)
+│   ├── dashboard.html
+│   ├── customers.html / companies.html
+│   ├── products.html / stock.html / prices.html
+│   ├── purchasing.html
+│   └── selling.html              # Main POS — cart, GST, PDF, WA
+│
+├── vercel.json                   # Rewrite rules: /* → /api/index (SPA style)
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## 🔌 API Reference Highlights
+## 🔌 REST API Reference
 
-All endpoints accept and return JSON payloads. Protected routes require `Authorization: Bearer <token>`.
+All protected routes require: `Authorization: Bearer <jwt_token>`
 
-| Route | Method | Access | Description |
-|---|---|---|---|
-| `/api/auth/login` | `POST` | Public | Authenticate user & issue JWT |
-| `/api/auth/register` | `POST` | Public | Register a new user account |
-| `/api/auth/reset-password` | `POST` | Public | Reset password with registered email |
-| `/api/auth/me` | `GET` | Protected | Fetch authenticated user profile |
-| `/api/customers` | `GET / POST` | Protected | List all customers or add a new customer |
-| `/api/customers/search` | `POST` | Protected | Secure search by phone, Aadhaar, name, or ID |
-| `/api/products` | `GET / POST` | Protected | Retrieve product catalog or create new product |
-| `/api/stock` | `GET / PUT` | Protected | View current inventory levels or adjust stock |
-| `/api/prices/:productId` | `GET / POST` | Protected | Fetch current price or insert price entry |
-| `/api/sales` | `GET / POST` | Protected | List sales history or record new sale |
-| `/api/purchases` | `GET / POST` | Protected | List purchase history or record vendor invoice |
-| `/api/dashboard/stats` | `GET` | Protected | Retrieve real-time summary statistics |
-| `/api/whatsapp/status` | `GET` | Protected | Status (Meta Cloud API in cloud, QR in local) |
-| `/api/whatsapp/send` | `POST` | Protected | Dispatch invoice PDF & message to WhatsApp |
-| `/api/whatsapp/logout` | `POST` | Protected | Unpair local WhatsApp session & refresh QR |
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/login` | Authenticate and receive JWT |
+| `POST` | `/api/auth/register` | Create new user account |
+| `POST` | `/api/auth/reset-password` | Reset password by email (no OTP) |
+| `GET` | `/api/auth/me` | Get current user profile |
+
+### Business Modules (all protected)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET/POST` | `/api/customers` | List all / create customer |
+| `POST` | `/api/customers/search` | Search by name, phone, Aadhaar |
+| `GET/POST` | `/api/products` | Product catalog CRUD |
+| `GET/PUT` | `/api/stock` | View inventory / adjust stock |
+| `GET/POST` | `/api/prices/:productId` | Fetch or insert price entry |
+| `GET/POST` | `/api/sales` | Sales history / record new sale |
+| `GET/POST` | `/api/purchases` | Purchase history / add purchase |
+| `GET` | `/api/dashboard/stats` | Real-time KPI aggregation |
+
+### WhatsApp
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/whatsapp/status` | Connection status + session info |
+| `POST` | `/api/whatsapp/send` | Send invoice PDF to customer WhatsApp |
+| `POST` | `/api/whatsapp/logout` | Clear local WA session |
+
+### OpenWA Payload Schema (Discovered via live API probing)
+```json
+// Text message → POST /api/sessions/:uuid/messages/send-text
+{ "chatId": "919894718182@c.us", "text": "Hello from Shri Amman Agro!" }
+
+// PDF invoice → POST /api/sessions/:uuid/messages/send-document
+{
+  "chatId": "919894718182@c.us",
+  "base64": "<base64_encoded_pdf>",
+  "mimetype": "application/pdf",
+  "filename": "Invoice-2024.pdf",
+  "caption": "📄 Your invoice from Shri Amman Agro Traders"
+}
+```
 
 ---
 
-## ☁️ Vercel Deployment Configuration
+## 🔧 WhatsApp Integration — How It Actually Works
 
-When deploying on **Vercel**, configure the following environment variables in **Project Settings -> Environment Variables**:
+This was the most complex engineering challenge. Here's the actual architecture:
+
+```
+PRODUCTION (Vercel)                     LOCAL DEV
+      │                                     │
+      ▼                                     ▼
+OpenWA REST API                     whatsapp-web.js
+(Railway hosted)                    (Puppeteer + QR scan)
+      │                                     │
+      ▼                                     ▼
+GET /api/sessions                   QR code in browser
+→ Resolve "default" to UUID         → Pair with WhatsApp
+→ Cache UUID in memory              → Send via WA Web protocol
+      │                                     │
+      ▼                                     ▼
+POST .../messages/send-document     sendDocument() method
+{ chatId, base64, mimetype... }     { chatId, base64File... }
+```
+
+**Key discovery**: OpenWA on Railway uses session **UUIDs** internally, not names.
+The service auto-resolves `"default"` → UUID via `GET /api/sessions` on first call, then caches it.
+
+---
+
+## ☁️ Deploying to Vercel
+
+### Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | **Yes** | Neon PostgreSQL connection string (e.g. `postgresql://user:pass@ep-xxx.neon.tech/dbname?sslmode=require`) |
-| `JWT_SECRET` | **Yes** | Secret key for signing and verifying JWT tokens |
-| `NODE_ENV` | **Yes** | Set to `production` |
-| `WHATSAPP_CLOUD_TOKEN` | Optional | Meta WhatsApp Business Access Token for Cloud invoice delivery |
-| `WHATSAPP_PHONE_NUMBER_ID` | Optional | WhatsApp Business Phone Number ID from Meta Developer Portal |
-| `WHATSAPP_API_VERSION` | Optional | Meta Graph API Version (defaults to `v21.0`) |
+| `DATABASE_URL` | ✅ Yes | `postgresql://user:pass@ep-xxx.neon.tech/dbname?sslmode=require` |
+| `JWT_SECRET` | ✅ Yes | Any long random string for signing tokens |
+| `NODE_ENV` | ✅ Yes | `production` |
+| `OPENWA_API_URL` | ✅ Yes | `https://openwa-production-12d1.up.railway.app` |
+| `OPENWA_API_KEY` | ✅ Yes | Your OpenWA instance API key |
+| `OPENWA_SESSION_ID` | ✅ Yes | `default` (auto-resolved to UUID at runtime) |
+
+### One-click Flow
+```bash
+# 1. Push to GitHub main branch
+git push origin main
+
+# 2. Vercel auto-detects push and deploys
+# → Runs: node api/index.js (serverless)
+# → Connects to Neon PostgreSQL
+# → Creates tables if missing (idempotent migrations)
+# → Mounts all /api/* routes
+# → Serves frontend statically
+```
 
 ---
 
-## ⚙️ Local Development Setup
+## 🛠️ Local Development Setup
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18.0.0 or higher)
-- [PostgreSQL](https://www.postgresql.org/) (v14.0 or higher) or Neon connection string
+- [Node.js](https://nodejs.org/) v18+
+- [PostgreSQL](https://www.postgresql.org/) v14+ (local) or Neon connection string
 
-### Setup Steps
+### Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yuvaakash1610/shri-amman-agro.git
-   cd shri-amman-agro
-   ```
+```bash
+# 1. Clone the repo
+git clone https://github.com/yuvaakash1610/shri-amman-agro.git
+cd shri-amman-agro
 
-2. **Install project dependencies**
-   ```bash
-   npm install
-   ```
+# 2. Install dependencies
+npm install
 
-3. **Configure Environment Variables**
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=3000
-   DB_USER=postgres
-   DB_PASSWORD=your_password
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=shri_amman_agro
-   JWT_SECRET=your_super_secret_jwt_key
-   ```
-   *(Or specify `DATABASE_URL=postgresql://user:pass@host/dbname?sslmode=require`)*
+# 3. Create .env file
+cat > .env << EOF
+PORT=3000
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=shri_amman_agro
+JWT_SECRET=your_super_secret_jwt_key_here
 
-4. **Initialize Database & Start App**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser. Database tables will be automatically created on startup.
+# OpenWA for WhatsApp (optional for local dev)
+OPENWA_API_URL=https://your-openwa-instance.railway.app
+OPENWA_API_KEY=your_openwa_api_key
+OPENWA_SESSION_ID=default
+EOF
+
+# 4. Start the dev server
+npm run dev
+# → Tables auto-created on first boot
+# → App running at http://localhost:3000
+```
 
 ---
 
-## 🧑‍💻 Author & Developer
+## 🧪 Engineering Highlights
+
+### Problem → Solution Record
+
+| Challenge | Root Cause | Solution |
+|---|---|---|
+| Vercel crash on cold start | `whatsapp-web.js` (Puppeteer) requires Chrome binary | Guard with `isVercel` flag; never `require()` on Vercel |
+| DB pool killed Lambda | `pool.on('error', () => process.exit(-1))` | Removed `process.exit` from error handler |
+| WA "Bad Request" | OpenWA routes need UUID, not session name `"default"` | Auto-resolve name→UUID via `GET /api/sessions` with caching |
+| WA payload schema | Field names differ from docs: `body` ≠ `text`, `data` ≠ `base64` | Live API probing (13 payload variations tested) until 201 returned |
+
+### Performance Notes
+- PDF base64 strings can be **2–5MB** — the `express.json({ limit: '10mb' })` cap matters
+- OpenWA session UUID is cached **in-process memory** on Vercel (re-resolved on cold starts only)
+- All `CREATE TABLE IF NOT EXISTS` migrations run on app boot — **zero downtime schema changes**
+
+---
+
+## 📊 Database Schema (Key Tables)
+
+```sql
+users          -- id, email, password_hash, role (admin/manager/staff)
+customers      -- id, name, phone, aadhaar_masked, address
+companies      -- id, name, gstin, contact_person, phone
+products       -- id, name, category_id, unit_id
+stock          -- product_id, quantity, last_updated
+prices         -- id, product_id, purchase_price, selling_price, created_at
+purchases      -- id, company_id, product_id, qty, total_amount, date
+sales          -- id, customer_id, invoice_number, total_amount, cgst, sgst, date
+sale_items     -- id, sale_id, product_id, qty, unit_price, amount
+```
+
+---
+
+## 🧑‍💻 Developer
 
 <div align="center">
 
 ### **Yuvaakash Kannan**
-*Full Stack Developer & Software Engineer*
+*Full-Stack Developer | Engineering Student*
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Yuvaakash_Kannan-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/yuvaakash-kannan-450751360/)
 [![GitHub](https://img.shields.io/badge/GitHub-yuvaakash1610-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yuvaakash1610)
@@ -239,5 +375,5 @@ When deploying on **Vercel**, configure the following environment variables in *
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for <b>Shri Amman Agro Traders</b>. ISC Licensed.</sub>
+  <sub>Built with ❤️ for <b>Shri Amman Agro Traders</b>. Real users. Real data. Real problems solved.</sub>
 </div>
