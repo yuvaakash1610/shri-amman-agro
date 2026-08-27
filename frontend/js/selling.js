@@ -556,8 +556,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ phoneNumber: sale.phone_number, base64Pdf, filename: opt.filename, message })
             });
             const data = await res.json();
+            // 503: WhatsApp not available in this deployment (e.g. Vercel serverless)
+            if (res.status === 503 || data.available === false) {
+                throw new Error('WhatsApp sending is only available when running the app locally. Use the PDF button to download the invoice instead.');
+            }
             if (!res.ok) throw new Error(data.error || data.message || 'Send failed');
-            alert('✓ WhatsApp invoice sent!');
+            alert('\u2713 WhatsApp invoice sent!');
         } catch (err) {
             alert(`Failed: ${err.message}`);
         } finally {

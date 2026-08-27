@@ -317,16 +317,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // ── WhatsApp status check ─────────────────────────────────────────────────
+    let waUnavailable = false; // set true when server reports unavailable (e.g. Vercel)
     const checkWhatsAppStatus = async (showToast = false) => {
         try {
             const res = await fetch(`${apiBaseUrl}/api/whatsapp/status`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
 
-            const statusText = document.getElementById('wa-status-text');
+            const statusText  = document.getElementById('wa-status-text');
             const qrContainer = document.getElementById('wa-qr-container');
-            const qrImg = document.getElementById('wa-qr-img');
-            const refreshBtn = document.getElementById('wa-refresh-btn');
-            const logoutBtn = document.getElementById('wa-logout-btn');
+            const qrImg       = document.getElementById('wa-qr-img');
+            const refreshBtn  = document.getElementById('wa-refresh-btn');
+            const logoutBtn   = document.getElementById('wa-logout-btn');
+
+            // 503: WhatsApp not supported in this environment (e.g. Vercel serverless)
+            if (res.status === 503 || data.available === false) {
+                waUnavailable = true;
+                statusText.innerHTML = '<span style="color: #6B7280;">☁️ Not available in cloud deployment.<br><small style="font-size:0.78em;">WhatsApp works only when running the app locally.</small></span>';
+                qrContainer.style.display = 'none';
+                if (refreshBtn) { refreshBtn.style.display = 'inline-block'; refreshBtn.disabled = true; }
+                if (logoutBtn)  logoutBtn.style.display = 'none';
+                if (showToast)  showWaToast('☁️ WhatsApp is not available in this cloud deployment', 'info');
+                return;
+            }
 
             if (data.ready) {
                 statusText.innerHTML = '<span style="color: #10B981;">✅ Linked and Ready</span>';
@@ -406,8 +418,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchDashboardData();
     checkWhatsAppStatus(false);
 
-    // Auto refresh WA status every 5 seconds if not ready
+    // Auto-refresh WA status every 5 seconds — only when still initializing/scanning
+    // and only when WhatsApp is actually supported in this environment.
     setInterval(() => {
+        if (waUnavailable) return; // stop polling when not supported (e.g. Vercel)
         const txt = document.getElementById('wa-status-text').innerText;
         if (txt.includes('Scan') || txt.includes('Initializing')) {
             checkWhatsAppStatus(false);

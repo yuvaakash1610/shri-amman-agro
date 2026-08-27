@@ -76,7 +76,17 @@ app.use('/api/purchases', purchaseRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 if (!isVercel && whatsappRoutes) {
+  // Local: full WhatsApp support (Puppeteer/Chromium available)
   app.use('/api/whatsapp', whatsappRoutes);
+} else {
+  // Vercel: WhatsApp requires a persistent browser process — not supported in serverless.
+  // Return a clean 503 so the frontend can show a graceful message instead of 404.
+  app.use('/api/whatsapp', (req, res) => {
+    res.status(503).json({
+      available: false,
+      message: 'WhatsApp integration is only available when running the app locally. It requires a persistent browser process that is not supported in serverless deployments.'
+    });
+  });
 }
 
 app.get('/', (req, res) => {
