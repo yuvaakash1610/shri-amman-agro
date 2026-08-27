@@ -14,27 +14,44 @@ router.post('/send', async (req, res) => {
         const filename = req.body.filename || 'Invoice.pdf';
 
         if (!recipient) {
-            return res.status(400).json({ error: 'Recipient and phone number are required' });
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Recipient and phone number are required' 
+            });
         }
 
-        // If PDF data is provided, send as invoice document
+        // If PDF data is present, send as document invoice
         if (pdfData) {
             const pdfBuffer = Buffer.isBuffer(pdfData) 
                 ? pdfData 
                 : Buffer.from(String(pdfData).replace(/^data:.*?;base64,/, ''), 'base64');
             const result = await sendWhatsAppDocument(recipient, pdfBuffer, filename, message);
-            return res.json({ success: true, message: 'WhatsApp invoice sent successfully', data: result });
+            return res.json({ 
+                success: true, 
+                message: 'WhatsApp invoice sent successfully',
+                data: result 
+            });
         }
 
         if (!message) {
-            return res.status(400).json({ error: 'Recipient and message are required' });
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Recipient and message are required' 
+            });
         }
 
         const result = await sendWhatsAppMessage(recipient, message);
-        res.json({ success: true, message: 'WhatsApp message sent successfully', data: result });
+        res.json({ 
+            success: true, 
+            message: 'WhatsApp message sent successfully',
+            data: result 
+        });
     } catch (error) {
-        console.error('Error sending WhatsApp message:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Send error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 
@@ -46,7 +63,10 @@ router.post('/send-document', async (req, res) => {
         const caption = req.body.caption || req.body.message || '';
 
         if (!recipient || !pdfData) {
-            return res.status(400).json({ error: 'Recipient and PDF data are required' });
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Recipient and PDF data are required' 
+            });
         }
 
         const pdfBuffer = Buffer.isBuffer(pdfData) 
@@ -54,10 +74,17 @@ router.post('/send-document', async (req, res) => {
             : Buffer.from(String(pdfData).replace(/^data:.*?;base64,/, ''), 'base64');
 
         const result = await sendWhatsAppDocument(recipient, pdfBuffer, filename, caption);
-        res.json({ success: true, data: result });
+        res.json({ 
+            success: true, 
+            message: 'WhatsApp document sent successfully',
+            data: result 
+        });
     } catch (error) {
-        console.error('Error sending WhatsApp document:', error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Document send error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 
@@ -66,11 +93,14 @@ router.get('/status', async (req, res) => {
         const status = await getWhatsAppStatus();
         res.json({
             mode: 'cloud',
-            ready: status.ready || status.status === 'connected' || status.status === 'configured',
             ...status
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Status error:', error);
+        res.status(500).json({ 
+            status: 'error', 
+            error: error.message 
+        });
     }
 });
 
@@ -78,7 +108,10 @@ router.post('/logout', async (req, res) => {
     try {
         res.json({ success: true, message: 'Session cleared' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 

@@ -1,12 +1,11 @@
 const axios = require('axios');
 
-const getBaseUrl = () => {
-    const url = process.env.WHAPI_BASE_URL || 'https://gate.whapi.cloud/';
-    return url.endsWith('/') ? url : url + '/';
-};
+const WHAPI_API_KEY = process.env.WHAPI_API_KEY;
+const WHAPI_BASE_URL = (process.env.WHAPI_BASE_URL || 'https://gate.whapi.cloud/').replace(/\/+$/, '');
+const WHAPI_CHANNEL_ID = process.env.WHAPI_CHANNEL_ID || 'WONDRW-C8K3D';
 
 /**
- * Format phone number to international format (e.g. 919894718182)
+ * Format phone numbers to international standard (e.g. 919894718182)
  */
 const formatPhoneNumber = (phone) => {
     if (!phone) return null;
@@ -20,17 +19,23 @@ const formatPhoneNumber = (phone) => {
 };
 
 async function sendWhatsAppMessage(recipient, message) {
-    const apiKey = process.env.WHAPI_API_KEY;
+    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
+    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
+    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+
     if (!apiKey) {
         throw new Error('WHAPI_API_KEY environment variable is not set');
     }
-    const cleanRecipient = formatPhoneNumber(recipient);
-    const baseUrl = getBaseUrl();
+
+    const cleanRecipient = formatPhoneNumber(recipient) || recipient;
 
     try {
+        console.log(`📤 Sending message to: ${cleanRecipient} from channel: ${channelId}`);
+
         const response = await axios.post(
-            `${baseUrl}messages/text`,
+            `${baseUrl}/messages/text`,
             {
+                channel: channelId,
                 to: cleanRecipient,
                 body: message
             },
@@ -41,7 +46,8 @@ async function sendWhatsAppMessage(recipient, message) {
                 }
             }
         );
-        console.log('✅ WhatsApp message sent:', response.data);
+        
+        console.log('✅ WhatsApp sent:', response.data);
         return response.data;
     } catch (error) {
         console.error('❌ Failed to send:', error.response?.data || error.message);
@@ -50,12 +56,15 @@ async function sendWhatsAppMessage(recipient, message) {
 }
 
 async function sendWhatsAppDocument(recipient, pdfBuffer, filename = 'invoice.pdf', caption = '') {
-    const apiKey = process.env.WHAPI_API_KEY;
+    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
+    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
+    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+
     if (!apiKey) {
         throw new Error('WHAPI_API_KEY environment variable is not set');
     }
-    const cleanRecipient = formatPhoneNumber(recipient);
-    const baseUrl = getBaseUrl();
+
+    const cleanRecipient = formatPhoneNumber(recipient) || recipient;
 
     try {
         const rawBase64 = Buffer.isBuffer(pdfBuffer)
@@ -64,9 +73,12 @@ async function sendWhatsAppDocument(recipient, pdfBuffer, filename = 'invoice.pd
 
         const dataUri = `data:application/pdf;name=${filename};base64,${rawBase64}`;
 
+        console.log(`📤 Sending PDF to: ${cleanRecipient} from channel: ${channelId}`);
+
         const response = await axios.post(
-            `${baseUrl}messages/document`,
+            `${baseUrl}/messages/document`,
             {
+                channel: channelId,
                 to: cleanRecipient,
                 media: dataUri,
                 filename: filename,
@@ -85,39 +97,70 @@ async function sendWhatsAppDocument(recipient, pdfBuffer, filename = 'invoice.pd
                 }
             }
         );
-        console.log('✅ WhatsApp document sent:', response.data);
+        
+        console.log('✅ PDF sent:', response.data);
         return response.data;
     } catch (error) {
-        console.error('❌ Failed to send document:', error.response?.data || error.message);
+        console.error('❌ Failed to send PDF:', error.response?.data || error.message);
         throw new Error(error.response?.data?.message || error.response?.data?.error || error.message);
     }
 }
 
 async function getWhatsAppStatus() {
-    const apiKey = process.env.WHAPI_API_KEY;
+    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
+    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
+    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+
     if (!apiKey) {
-        return { status: 'disconnected', ready: false, configured: false, error: 'WHAPI_API_KEY not configured' };
+        return { 
+            status: 'disconnected', 
+            ready: false,
+            configured: false,
+            error: 'WHAPI_API_KEY not configured' 
+        };
     }
-    const baseUrl = getBaseUrl();
+
     try {
         const response = await axios.get(
-            `${baseUrl}status`,
+            `${baseUrl}/channels`,
             {
                 headers: {
                     'Authorization': `Bearer ${apiKey}`
                 },
-                timeout: 5000
+                timeout: 6000
             }
         );
-        return { status: 'connected', ready: true, configured: true, data: response.data };
+        
+        const channels = response.data?.channels || (Array.isArray(response.data) ? response.data : []);
+        const channelExists = channels.some(c => c.id === channelId || c.name === channelId);
+        
+        if (channelExists) {
+            return { 
+                status: 'connected', 
+                ready: true,
+                configured: true,
+                channel: channelId,
+                message: '✅ WhatsApp is ready to send invoices!' 
+            };
+        } else {
+            return { 
+                status: 'configured', 
+                ready: true,
+                configured: true,
+                channel: channelId,
+                availableChannels: channels.map(c => c.id || c.name),
+                message: 'Channel configured. Ready to dispatch messages.' 
+            };
+        }
     } catch (error) {
-        // If channel is configured in env but status endpoint returns error or channel pairing required
+        console.error('Status check response/timeout:', error.message);
         return { 
-            status: error.response?.status === 200 ? 'connected' : 'configured',
+            status: 'configured', 
             ready: true,
             configured: true,
-            message: 'WHAPI_API_KEY configured',
-            error: error.response?.data?.error || error.message
+            channel: channelId,
+            error: error.message,
+            message: 'WHAPI_CHANNEL_ID and WHAPI_API_KEY are configured.'
         };
     }
 }
