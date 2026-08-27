@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Fast-fail if Cloud API is active but not configured yet with tokens
         if (waStatusCache && waStatusCache.mode === 'cloud' && !waStatusCache.ready) {
-            alert('WhatsApp is not configured. Please add WHAPI_API_KEY in Vercel Settings to send invoices via WhatsApp.');
+            alert('WhatsApp is not configured. Please add OPENWA_API_KEY and OPENWA_API_URL in Vercel Settings to send invoices via WhatsApp.');
             return;
         }
 

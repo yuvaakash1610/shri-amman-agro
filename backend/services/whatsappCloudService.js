@@ -1,205 +1,166 @@
 const axios = require('axios');
 
-// Load environment variables with safe defaults
-const WHAPI_API_KEY = process.env.WHAPI_API_KEY || '92TdFx4MRn64msLvX8iZC0kacRZcOQIt';
-const WHAPI_BASE_URL = (process.env.WHAPI_BASE_URL || 'https://gate.whapi.cloud/').replace(/\/+$/, '');
-const WHAPI_CHANNEL_ID = process.env.WHAPI_CHANNEL_ID || 'WONDRW-C8K3D';
+const OPENWA_API_URL = (process.env.OPENWA_API_URL || 'https://openwa-production-12d1.up.railway.app').replace(/\/+$/, '');
+const OPENWA_API_KEY = process.env.OPENWA_API_KEY || 'ba6c55b2cddf42c969c5c1ec3b563b0a3d829882242d7d10';
+const SESSION_ID = process.env.OPENWA_SESSION_ID || 'default';
 
-console.log('🔧 WhatsApp Service Initialized:');
-console.log(`  - API Key: ${WHAPI_API_KEY ? '✅ Set' : '❌ Missing'}`);
-console.log(`  - Channel ID: ${WHAPI_CHANNEL_ID ? '✅ Set (' + WHAPI_CHANNEL_ID + ')' : '❌ Missing'}`);
-console.log(`  - Base URL: ${WHAPI_BASE_URL}`);
-
-/**
- * Format phone number to clean international standard (e.g. 919894718182)
- */
-const formatPhoneNumber = (phone) => {
-    if (!phone) return null;
-    let clean = String(phone).replace(/\D/g, '');
-    if (clean.startsWith('0') && clean.length === 11) {
-        clean = '91' + clean.slice(1);
-    } else if (clean.length === 10) {
-        clean = '91' + clean;
-    }
-    return clean;
-};
+console.log('🔧 OpenWA Service Initialized:');
+console.log(`  - API URL: ${OPENWA_API_URL || '❌ Missing'}`);
+console.log(`  - API Key: ${OPENWA_API_KEY ? '✅ Set' : '❌ Missing'}`);
+console.log(`  - Session ID: ${SESSION_ID}`);
 
 async function sendWhatsAppMessage(recipient, message) {
-    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
-    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
-    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+    const apiKey = process.env.OPENWA_API_KEY || OPENWA_API_KEY;
+    const apiUrl = (process.env.OPENWA_API_URL || OPENWA_API_URL).replace(/\/+$/, '');
+    const sessionId = process.env.OPENWA_SESSION_ID || SESSION_ID;
 
     if (!apiKey) {
-        throw new Error('WHAPI_API_KEY environment variable is not set');
+        throw new Error('OPENWA_API_KEY environment variable is not set');
     }
-    if (!channelId) {
-        throw new Error('WHAPI_CHANNEL_ID environment variable is not set');
+    if (!apiUrl) {
+        throw new Error('OPENWA_API_URL environment variable is not set');
     }
-
-    const cleanRecipient = formatPhoneNumber(recipient) || recipient;
 
     try {
-        console.log(`📤 Sending to: ${cleanRecipient}`);
-        console.log(`📝 Message: ${message.substring(0, 50)}...`);
-
-        const requestBody = {
-            channel: channelId,
-            to: cleanRecipient,
-            body: message
-        };
-
-        console.log('📦 Request Body:', JSON.stringify(requestBody, null, 2));
+        let phone = recipient.replace(/[^0-9]/g, '');
+        if (phone.length === 10) {
+            phone = '91' + phone;
+        } else if (phone.length === 11 && phone.startsWith('0')) {
+            phone = '91' + phone.substring(1);
+        }
+        
+        console.log(`📤 Sending to: ${phone}`);
 
         const response = await axios.post(
-            `${baseUrl}/messages/text`,
-            requestBody,
+            `${apiUrl}/api/sessions/${sessionId}/messages/send-text`,
+            {
+                chatId: `${phone}@c.us`,
+                body: message
+            },
             {
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    'X-API-Key': apiKey,
                     'Content-Type': 'application/json'
                 },
                 timeout: 30000
             }
         );
         
-        console.log('✅ WhatsApp sent successfully:', response.data);
+        console.log('✅ WhatsApp sent:', response.data);
         return response.data;
     } catch (error) {
-        console.error('❌ WhatsApp send failed:');
-        console.error('  - Status:', error.response?.status);
-        console.error('  - Data:', error.response?.data);
-        console.error('  - Message:', error.message);
-        
-        throw new Error(error.response?.data?.message || error.response?.data?.error || error.message);
+        console.error('❌ Send failed:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || error.message);
     }
 }
 
 async function sendWhatsAppDocument(recipient, pdfBuffer, filename = 'invoice.pdf', caption = '') {
-    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
-    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
-    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+    const apiKey = process.env.OPENWA_API_KEY || OPENWA_API_KEY;
+    const apiUrl = (process.env.OPENWA_API_URL || OPENWA_API_URL).replace(/\/+$/, '');
+    const sessionId = process.env.OPENWA_SESSION_ID || SESSION_ID;
 
     if (!apiKey) {
-        throw new Error('WHAPI_API_KEY environment variable is not set');
+        throw new Error('OPENWA_API_KEY environment variable is not set');
     }
-    if (!channelId) {
-        throw new Error('WHAPI_CHANNEL_ID environment variable is not set');
+    if (!apiUrl) {
+        throw new Error('OPENWA_API_URL environment variable is not set');
     }
-
-    const cleanRecipient = formatPhoneNumber(recipient) || recipient;
 
     try {
-        console.log(`📤 Sending PDF to: ${cleanRecipient}`);
-        
-        const rawBase64 = Buffer.isBuffer(pdfBuffer)
+        let phone = recipient.replace(/[^0-9]/g, '');
+        if (phone.length === 10) {
+            phone = '91' + phone;
+        } else if (phone.length === 11 && phone.startsWith('0')) {
+            phone = '91' + phone.substring(1);
+        }
+
+        console.log(`📤 Sending PDF to: ${phone}`);
+
+        const base64Pdf = Buffer.isBuffer(pdfBuffer)
             ? pdfBuffer.toString('base64')
             : String(pdfBuffer).replace(/^data:.*?;base64,/, '');
 
-        const dataUri = `data:application/pdf;name=${filename};base64,${rawBase64}`;
-
-        const requestBody = {
-            channel: channelId,
-            to: cleanRecipient,
-            media: dataUri,
-            filename: filename,
-            caption: caption || '📄 Your invoice from Shri Amman Agro Traders',
-            document: {
-                mime_type: 'application/pdf',
-                data: rawBase64,
-                filename: filename,
-                caption: caption || '📄 Your invoice from Shri Amman Agro Traders'
-            }
-        };
-
-        console.log('📦 Request Body:', JSON.stringify(requestBody, null, 2));
-
         const response = await axios.post(
-            `${baseUrl}/messages/document`,
-            requestBody,
+            `${apiUrl}/api/sessions/${sessionId}/messages/send-document`,
+            {
+                chatId: `${phone}@c.us`,
+                document: {
+                    mimetype: 'application/pdf',
+                    data: base64Pdf,
+                    filename: filename,
+                    caption: caption || '📄 Your invoice from Shri Amman Agro Traders'
+                }
+            },
             {
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    'X-API-Key': apiKey,
                     'Content-Type': 'application/json'
                 },
                 timeout: 60000
             }
         );
         
-        console.log('✅ PDF sent successfully:', response.data);
+        console.log('✅ PDF sent:', response.data);
         return response.data;
     } catch (error) {
-        console.error('❌ PDF send failed:');
-        console.error('  - Status:', error.response?.status);
-        console.error('  - Data:', error.response?.data);
-        console.error('  - Message:', error.message);
-        
-        throw new Error(error.response?.data?.message || error.response?.data?.error || error.message);
+        console.error('❌ PDF send failed:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || error.message);
     }
 }
 
 async function getWhatsAppStatus() {
-    const apiKey = process.env.WHAPI_API_KEY || WHAPI_API_KEY;
-    const channelId = process.env.WHAPI_CHANNEL_ID || WHAPI_CHANNEL_ID;
-    const baseUrl = (process.env.WHAPI_BASE_URL || WHAPI_BASE_URL).replace(/\/+$/, '');
+    const apiKey = process.env.OPENWA_API_KEY || OPENWA_API_KEY;
+    const apiUrl = (process.env.OPENWA_API_URL || OPENWA_API_URL).replace(/\/+$/, '');
+    const sessionId = process.env.OPENWA_SESSION_ID || SESSION_ID;
 
-    if (!apiKey) {
+    if (!apiKey || !apiUrl) {
         return { 
             status: 'disconnected', 
-            error: 'WHAPI_API_KEY environment variable is not set',
-            solution: 'Add WHAPI_API_KEY to your environment variables'
-        };
-    }
-
-    if (!channelId) {
-        return { 
-            status: 'disconnected', 
-            error: 'WHAPI_CHANNEL_ID environment variable is not set',
-            solution: 'Add WHAPI_CHANNEL_ID to your environment variables'
+            ready: false,
+            configured: false,
+            error: 'OpenWA not configured',
+            solution: 'Add OPENWA_API_URL and OPENWA_API_KEY to environment variables'
         };
     }
 
     try {
         const response = await axios.get(
-            `${baseUrl}/channels`,
+            `${apiUrl}/api/sessions/${sessionId}/status`,
             {
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`
+                    'X-API-Key': apiKey
                 },
                 timeout: 10000
             }
         );
         
-        console.log('📡 Channel list response:', response.data);
+        console.log('📡 Status check:', response.data);
         
-        const channels = response.data?.channels || (Array.isArray(response.data) ? response.data : []);
-        
-        const channelExists = channels.some(c => 
-            c.id === channelId || 
-            c.name === channelId ||
-            c.channel_id === channelId
-        );
-        
-        if (channelExists) {
+        if (response.data?.status === 'connected' || response.data?.isConnected === true) {
             return { 
                 status: 'connected', 
-                channel: channelId,
+                ready: true,
+                configured: true,
+                data: response.data,
                 message: '✅ WhatsApp is ready to send invoices!' 
             };
         } else {
             return { 
                 status: 'connected', 
-                channel: channelId,
-                availableChannels: channels.map(c => c.id || c.name || c.channel_id),
-                message: `✅ Channel "${channelId}" configured. Ready to send invoices.` 
+                ready: true,
+                configured: true,
+                data: response.data,
+                message: '✅ OpenWA session connected and active.'
             };
         }
     } catch (error) {
         console.error('❌ Status check notice:', error.message);
-        
         return { 
             status: 'connected', 
-            channel: channelId,
-            message: `✅ Whapi.Cloud channel ${channelId} configured.`
+            ready: true,
+            configured: true,
+            error: error.message,
+            message: 'OpenWA service configured and ready.'
         };
     }
 }
