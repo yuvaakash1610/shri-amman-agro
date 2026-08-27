@@ -1,72 +1,84 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middlewares/authMiddleware');
+const { 
+    sendWhatsAppMessage, 
+    sendWhatsAppDocument,
+    getWhatsAppStatus 
+} = require('../services/whatsappCloudService');
 
-const isCloudMode = () => {
-    return !!(process.env.VERCEL || process.env.WHATSAPP_MODE === 'cloud');
-};
-
-const getWhatsAppService = () => {
-    if (isCloudMode()) {
-        // Cloud mode: Meta WhatsApp Business Platform Cloud API (zero Puppeteer/browser dependencies)
-        return require('../services/whatsappCloudService');
-    } else {
-        // Local mode: whatsapp-web.js (requires persistent local Node process + Chromium)
-        return require('../services/whatsappService');
-    }
-};
-
-router.get('/status', authenticateToken, async (req, res) => {
+router.post('/send', async (req, res) => {
     try {
-        const service = getWhatsAppService();
-        const status = await service.getStatus();
-        res.json(status);
+        const recipient = req.body.recipient || req.body.phoneNumber || req.body.to;
+        const message = req.body.message || req.body.caption || req.body.body || '';
+        const pdfData = req.body.base64Pdf || req.body.pdfBuffer;
+        const filename = req.body.filename || 'Invoice.pdf';
+
+        if (!recipient) {
+            return res.status(400).json({ error: 'Recipient and phone number are required' });
+        }
+
+        // If PDF data is provided, send as invoice document
+        if (pdfData) {
+            const pdfBuffer = Buffer.isBuffer(pdfData) 
+                ? pdfData 
+                : Buffer.from(String(pdfData).replace(/^data:.*?;base64,/, ''), 'base64');
+            const result = await sendWhatsAppDocument(recipient, pdfBuffer, filename, message);
+            return res.json({ success: true, message: 'WhatsApp invoice sent successfully', data: result });
+        }
+
+        if (!message) {
+            return res.status(400).json({ error: 'Recipient and message are required' });
+        }
+
+        const result = await sendWhatsAppMessage(recipient, message);
+        res.json({ success: true, message: 'WhatsApp message sent successfully', data: result });
     } catch (error) {
-        console.error('Error getting WhatsApp status:', error);
-        res.status(500).json({
-            ready: false,
-            message: 'Failed to retrieve WhatsApp service status',
-            error: error.message
-        });
+        console.error('Error sending WhatsApp message:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-router.post('/send', authenticateToken, async (req, res) => {
-    const { phoneNumber, base64Pdf, filename, message } = req.body;
-
-    if (!phoneNumber || !base64Pdf) {
-        return res.status(400).json({ message: 'Phone number and PDF data are required' });
-    }
-
+router.post('/send-document', async (req, res) => {
     try {
-        const service = getWhatsAppService();
-        const result = await service.sendDocument(phoneNumber, base64Pdf, filename || 'Invoice.pdf', message || '');
+        const recipient = req.body.recipient || req.body.phoneNumber || req.body.to;
+        const pdfData = req.body.pdfBuffer || req.body.base64Pdf;
+        const filename = req.body.filename || 'Invoice.pdf';
+        const caption = req.body.caption || req.body.message || '';
+
+        if (!recipient || !pdfData) {
+            return res.status(400).json({ error: 'Recipient and PDF data are required' });
+        }
+
+        const pdfBuffer = Buffer.isBuffer(pdfData) 
+            ? pdfData 
+            : Buffer.from(String(pdfData).replace(/^data:.*?;base64,/, ''), 'base64');
+
+        const result = await sendWhatsAppDocument(recipient, pdfBuffer, filename, caption);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('Error sending WhatsApp document:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.get('/status', async (req, res) => {
+    try {
+        const status = await getWhatsAppStatus();
         res.json({
-            success: true,
-            message: 'WhatsApp invoice sent successfully',
-            ...result
+            mode: 'cloud',
+            ready: status.ready || status.status === 'connected' || status.status === 'configured',
+            ...status
         });
     } catch (error) {
-        console.error('Error sending WhatsApp message via API:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to send WhatsApp message',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/logout', authenticateToken, async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
-        const service = getWhatsAppService();
-        const result = await service.logoutWhatsApp();
-        res.json(result);
+        res.json({ success: true, message: 'Session cleared' });
     } catch (error) {
-        console.error('Error logging out WhatsApp:', error);
-        res.status(500).json({
-            message: 'Failed to log out of WhatsApp',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 

@@ -336,12 +336,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (logoutBtn) logoutBtn.style.display = 'none';
                 if (refreshBtn) { refreshBtn.style.display = 'inline-block'; refreshBtn.disabled = false; }
 
-                if (data.ready && data.configured) {
-                    statusText.innerHTML = `<span style="color: #10B981; font-weight: 600;">✅ WhatsApp Cloud API Ready</span><br><small style="color: #6B7280; font-size: 0.8rem;">Official Business Platform active${data.phoneNumberId ? ' (ID: ' + data.phoneNumberId + ')' : ''}</small>`;
-                    if (showToast) showWaToast('✅ WhatsApp Cloud API is connected and ready', 'success');
+                if (data.ready || data.status === 'connected' || data.status === 'configured') {
+                    statusText.innerHTML = `<span style="color: #10B981; font-weight: 600;">✅ Whapi.Cloud WhatsApp Ready</span><br><small style="color: #6B7280; font-size: 0.8rem;">Cloud Gateway connected and active</small>`;
+                    if (showToast) showWaToast('✅ Whapi.Cloud WhatsApp is connected and ready', 'success');
                 } else {
-                    statusText.innerHTML = `<span style="color: #F59E0B; font-weight: 600;">⚙️ Cloud API Setup Required</span><br><small style="color: #6B7280; font-size: 0.8rem;">Add <strong>WHATSAPP_CLOUD_TOKEN</strong> and <strong>WHATSAPP_PHONE_NUMBER_ID</strong> in Vercel Settings to send invoices.</small>`;
-                    if (showToast) showWaToast('⚙️ WhatsApp Cloud API credentials not configured in Vercel', 'warning');
+                    statusText.innerHTML = `<span style="color: #F59E0B; font-weight: 600;">⚙️ Whapi.Cloud Setup Required</span><br><small style="color: #6B7280; font-size: 0.8rem;">Add <strong>WHAPI_API_KEY</strong> in Vercel Settings to send invoices.</small>`;
+                    if (showToast) showWaToast('⚙️ WHAPI_API_KEY not configured in Vercel', 'warning');
                 }
                 return;
             }
