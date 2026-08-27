@@ -12,13 +12,16 @@ const priceRoutes = require('./routes/priceRoutes');
 const purchaseRoutes = require('./routes/purchaseRoutes');
 const saleRoutes = require('./routes/saleRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const whatsappRoutes = require('./routes/whatsappRoutes');
-const whatsappService = require('./services/whatsappService');
 const { authenticateToken } = require('./middlewares/authMiddleware');
 const companyController = require('./controllers/companyController');
 const productController = require('./controllers/productController');
 const stockController = require('./controllers/stockController');
 const priceController = require('./controllers/priceController');
+
+// Vercel serverless has no Chromium — guard WhatsApp (Puppeteer) behind env check
+const isVercel = !!process.env.VERCEL;
+const whatsappRoutes = isVercel ? null : require('./routes/whatsappRoutes');
+const whatsappService = isVercel ? null : require('./services/whatsappService');
 
 dotenv.config();
 
@@ -72,7 +75,9 @@ app.get('/api/prices/:productId/history', authenticateToken, priceController.get
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/whatsapp', whatsappRoutes);
+if (!isVercel && whatsappRoutes) {
+  app.use('/api/whatsapp', whatsappRoutes);
+}
 
 app.get('/', (req, res) => {
   sendFrontendFile(res, 'index.html');
@@ -135,12 +140,12 @@ app.use((err, req, res, next) => {
 
 initializeDatabase()
   .then(() => {
-    if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    if (!isVercel) {
       app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is running on port ${PORT}`);
         setTimeout(() => {
           try {
-            whatsappService.initWhatsApp();
+            if (whatsappService) whatsappService.initWhatsApp();
           } catch (e) {
             console.error('Failed to init WhatsApp:', e);
           }

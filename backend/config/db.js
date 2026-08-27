@@ -20,8 +20,9 @@ const pool = process.env.DATABASE_URL
     });
 
 pool.on('error', (err, client) => {
+  // Log but do NOT call process.exit() — in Vercel serverless that kills the
+  // Lambda mid-request, causing a 500 on every subsequent call.
   console.error('Unexpected error on idle client', err);
-  process.exit(-1);
 });
 
 const initializeDatabase = async () => {
