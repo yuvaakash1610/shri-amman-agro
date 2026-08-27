@@ -20,6 +20,8 @@ router.post('/send', async (req, res) => {
             });
         }
 
+        console.log(`📨 Send request for ${recipient}`);
+
         // If PDF data is present, send as document invoice
         if (pdfData) {
             const pdfBuffer = Buffer.isBuffer(pdfData) 
@@ -47,7 +49,7 @@ router.post('/send', async (req, res) => {
             data: result 
         });
     } catch (error) {
-        console.error('Send error:', error);
+        console.error('Send route error:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
@@ -59,7 +61,7 @@ router.post('/send-document', async (req, res) => {
     try {
         const recipient = req.body.recipient || req.body.phoneNumber || req.body.to;
         const pdfData = req.body.pdfBuffer || req.body.base64Pdf;
-        const filename = req.body.filename || 'Invoice.pdf';
+        const filename = req.body.filename || 'invoice.pdf';
         const caption = req.body.caption || req.body.message || '';
 
         if (!recipient || !pdfData) {
@@ -69,8 +71,10 @@ router.post('/send-document', async (req, res) => {
             });
         }
 
-        const pdfBuffer = Buffer.isBuffer(pdfData) 
-            ? pdfData 
+        console.log(`📨 Document request for ${recipient}`);
+
+        const pdfBuffer = Buffer.isBuffer(pdfData)
+            ? pdfData
             : Buffer.from(String(pdfData).replace(/^data:.*?;base64,/, ''), 'base64');
 
         const result = await sendWhatsAppDocument(recipient, pdfBuffer, filename, caption);
@@ -80,7 +84,7 @@ router.post('/send-document', async (req, res) => {
             data: result 
         });
     } catch (error) {
-        console.error('Document send error:', error);
+        console.error('Document route error:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
@@ -96,7 +100,7 @@ router.get('/status', async (req, res) => {
             ...status
         });
     } catch (error) {
-        console.error('Status error:', error);
+        console.error('Status route error:', error);
         res.status(500).json({ 
             status: 'error', 
             error: error.message 
