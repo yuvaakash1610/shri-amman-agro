@@ -94,9 +94,47 @@ const register = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and new password are required.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+    }
+
+    // Check if user exists
+    const userResult = await db.query('SELECT id, full_name, email FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'No account found with this email address.' });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Update password
+    await db.query(
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
+      [passwordHash, email.trim().toLowerCase()]
+    );
+
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You can now sign in with your new password.'
+    });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ message: 'Internal server error during password reset.' });
+  }
+};
+
 const getMe = async (req, res) => {
   // Uses token data set by authenticateToken middleware
   res.json({ user: req.user });
 };
 
-module.exports = { login, getMe, register };
+module.exports = { login, getMe, register, resetPassword };

@@ -5,6 +5,7 @@ const { authenticateToken } = require('../middlewares/authMiddleware');
 
 router.post('/login', authController.login);
 router.post('/register', authController.register);
+router.post('/reset-password', authController.resetPassword);
 
 // Protected route for getting current user's profile
 router.get('/me', authenticateToken, authController.getMe);

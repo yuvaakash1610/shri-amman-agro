@@ -85,6 +85,10 @@ app.get('/register.html', (req, res) => {
   sendFrontendFile(res, 'register.html');
 });
 
+app.get('/forgot-password.html', (req, res) => {
+  sendFrontendFile(res, 'forgot-password.html');
+});
+
 app.get('/dashboard.html', (req, res) => {
   sendFrontendFile(res, 'dashboard.html');
 });
