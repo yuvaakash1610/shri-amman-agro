@@ -527,16 +527,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         thermal.style.display = 'none';
     };
 
+    // ── WhatsApp availability cache ───────────────────────────────────────────
+    let isWhatsAppAvailable = null;
+
+    const checkWhatsAppAvailability = async () => {
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/whatsapp/status`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.status === 503 || res.status === 404) {
+                isWhatsAppAvailable = false;
+                return false;
+            }
+            const data = await res.json();
+            if (data.available === false) {
+                isWhatsAppAvailable = false;
+                return false;
+            }
+            isWhatsAppAvailable = true;
+            return true;
+        } catch {
+            isWhatsAppAvailable = false;
+            return false;
+        }
+    };
+
     // ── Send WhatsApp ─────────────────────────────────────────────────────────
     const handleSendWA = async (saleId) => {
         const sale = currentSalesData.find(s => s.sale_id == saleId);
         if (!sale) return;
         if (!sale.phone_number) { alert('Customer has no phone number.'); return; }
 
+        // Fast-fail if WhatsApp is known to be unavailable (e.g. on Vercel)
+        if (isWhatsAppAvailable === false) {
+            alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+            return;
+        }
+
+        // Check availability if not yet cached
+        if (isWhatsAppAvailable === null) {
+            const avail = await checkWhatsAppAvailability();
+            if (!avail) {
+                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+                return;
+            }
+        }
+
         const btn = document.querySelector(`.send-wa-btn[data-id="${saleId}"]`);
-        const origText = btn.innerHTML;
-        btn.innerHTML = '⏳ Sending...';
-        btn.disabled  = true;
+        const origText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = '⏳ Sending...';
+            btn.disabled  = true;
+        }
 
         try {
             populateInvoiceTemplate(sale);
@@ -555,18 +597,46 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ phoneNumber: sale.phone_number, base64Pdf, filename: opt.filename, message })
             });
-            const data = await res.json();
-            // 503: WhatsApp not available in this deployment (e.g. Vercel serverless)
-            if (res.status === 503 || data.available === false) {
-                throw new Error('WhatsApp sending is only available when running the app locally. Use the PDF button to download the invoice instead.');
+
+            // 503 / 404: WhatsApp not available in this deployment (e.g. Vercel serverless)
+            if (res.status === 503 || res.status === 404) {
+                isWhatsAppAvailable = false;
+                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+                return;
             }
-            if (!res.ok) throw new Error(data.error || data.message || 'Send failed');
+
+            const contentType = res.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await res.json() : {};
+
+            if (data.available === false) {
+                isWhatsAppAvailable = false;
+                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+                return;
+            }
+
+            if (!res.ok) {
+                const errMsg = data.error || data.message || 'Send failed';
+                if (errMsg.includes('API endpoint not found') || errMsg.includes('serverless') || errMsg.includes('unavailable')) {
+                    isWhatsAppAvailable = false;
+                    alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+                    return;
+                }
+                throw new Error(errMsg);
+            }
+
             alert('\u2713 WhatsApp invoice sent!');
         } catch (err) {
-            alert(`Failed: ${err.message}`);
+            const errMsg = err.message || '';
+            if (errMsg.includes('API endpoint not found') || errMsg.includes('serverless') || errMsg.includes('unavailable')) {
+                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
+            } else {
+                alert(`Failed: ${errMsg}`);
+            }
         } finally {
-            btn.innerHTML = origText;
-            btn.disabled  = false;
+            if (btn) {
+                btn.innerHTML = origText;
+                btn.disabled  = false;
+            }
         }
     };
 
@@ -585,4 +655,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderNav();
     await loadFormData();
     await loadSales();
+    checkWhatsAppAvailability();
 });
