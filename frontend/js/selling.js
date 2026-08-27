@@ -528,27 +528,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // ── WhatsApp availability cache ───────────────────────────────────────────
-    let isWhatsAppAvailable = null;
+    let waStatusCache = null;
 
     const checkWhatsAppAvailability = async () => {
         try {
             const res = await fetch(`${apiBaseUrl}/api/whatsapp/status`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.status === 503 || res.status === 404) {
-                isWhatsAppAvailable = false;
-                return false;
-            }
             const data = await res.json();
-            if (data.available === false) {
-                isWhatsAppAvailable = false;
-                return false;
-            }
-            isWhatsAppAvailable = true;
-            return true;
+            waStatusCache = data;
+            return data;
         } catch {
-            isWhatsAppAvailable = false;
-            return false;
+            waStatusCache = { ready: false, message: 'WhatsApp service offline' };
+            return waStatusCache;
         }
     };
 
@@ -558,19 +550,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!sale) return;
         if (!sale.phone_number) { alert('Customer has no phone number.'); return; }
 
-        // Fast-fail if WhatsApp is known to be unavailable (e.g. on Vercel)
-        if (isWhatsAppAvailable === false) {
-            alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-            return;
+        // Fetch status if not yet cached
+        if (!waStatusCache) {
+            await checkWhatsAppAvailability();
         }
 
-        // Check availability if not yet cached
-        if (isWhatsAppAvailable === null) {
-            const avail = await checkWhatsAppAvailability();
-            if (!avail) {
-                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-                return;
-            }
+        // Fast-fail if Cloud API is active but not configured yet with tokens
+        if (waStatusCache && waStatusCache.mode === 'cloud' && !waStatusCache.ready) {
+            alert('WhatsApp Cloud API is not configured. Please add WHATSAPP_CLOUD_TOKEN and WHATSAPP_PHONE_NUMBER_ID in Vercel Settings to send invoices via WhatsApp.');
+            return;
         }
 
         const btn = document.querySelector(`.send-wa-btn[data-id="${saleId}"]`);
@@ -592,46 +580,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
             const base64Pdf = await html2pdf().set(opt).from(element).outputPdf('datauristring');
             const message = `Hello ${sale.customer_name},\n\nThank you for your purchase at Shri Amman Agro Traders.\n\nInvoice: ${sale.invoice_number || 'N/A'}\nTotal Amount: ${fmt(sale.total_amount)}\n\nRegards,\nShri Amman Agro Traders`;
+            
             const res = await fetch(`${apiBaseUrl}/api/whatsapp/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ phoneNumber: sale.phone_number, base64Pdf, filename: opt.filename, message })
             });
 
-            // 503 / 404: WhatsApp not available in this deployment (e.g. Vercel serverless)
-            if (res.status === 503 || res.status === 404) {
-                isWhatsAppAvailable = false;
-                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-                return;
-            }
-
             const contentType = res.headers.get('content-type') || '';
             const data = contentType.includes('application/json') ? await res.json() : {};
 
-            if (data.available === false) {
-                isWhatsAppAvailable = false;
-                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-                return;
-            }
-
-            if (!res.ok) {
-                const errMsg = data.error || data.message || 'Send failed';
-                if (errMsg.includes('API endpoint not found') || errMsg.includes('serverless') || errMsg.includes('unavailable')) {
-                    isWhatsAppAvailable = false;
-                    alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-                    return;
-                }
+            if (!res.ok || data.success === false) {
+                const errMsg = data.error || data.message || 'Failed to send WhatsApp message';
                 throw new Error(errMsg);
             }
 
-            alert('\u2713 WhatsApp invoice sent!');
+            alert('\u2713 WhatsApp invoice sent successfully!');
         } catch (err) {
-            const errMsg = err.message || '';
-            if (errMsg.includes('API endpoint not found') || errMsg.includes('serverless') || errMsg.includes('unavailable')) {
-                alert('WhatsApp sending is unavailable in cloud deployment. Please run the WhatsApp service locally.');
-            } else {
-                alert(`Failed: ${errMsg}`);
-            }
+            alert(`Failed: ${err.message}`);
         } finally {
             if (btn) {
                 btn.innerHTML = origText;

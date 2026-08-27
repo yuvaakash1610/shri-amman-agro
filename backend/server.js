@@ -18,9 +18,9 @@ const productController = require('./controllers/productController');
 const stockController = require('./controllers/stockController');
 const priceController = require('./controllers/priceController');
 
-// Vercel serverless has no Chromium — guard WhatsApp (Puppeteer) behind env check
+// Vercel serverless has no Chromium — local WhatsApp (Puppeteer) is only required for local startup
 const isVercel = !!process.env.VERCEL;
-const whatsappRoutes = isVercel ? null : require('./routes/whatsappRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const whatsappService = isVercel ? null : require('./services/whatsappService');
 
 dotenv.config();
@@ -75,19 +75,7 @@ app.get('/api/prices/:productId/history', authenticateToken, priceController.get
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-if (!isVercel && whatsappRoutes) {
-  // Local: full WhatsApp support (Puppeteer/Chromium available)
-  app.use('/api/whatsapp', whatsappRoutes);
-} else {
-  // Vercel: WhatsApp requires a persistent browser process — not supported in serverless.
-  // Return a clean 503 so the frontend can show a graceful message instead of 404.
-  app.use('/api/whatsapp', (req, res) => {
-    res.status(503).json({
-      available: false,
-      message: 'WhatsApp integration is only available when running the app locally. It requires a persistent browser process that is not supported in serverless deployments.'
-    });
-  });
-}
+app.use('/api/whatsapp', whatsappRoutes);
 
 app.get('/', (req, res) => {
   sendFrontendFile(res, 'index.html');
