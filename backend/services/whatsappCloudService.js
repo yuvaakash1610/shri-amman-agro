@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-// Load environment variables
-const WHAPI_API_KEY = process.env.WHAPI_API_KEY;
+// Load environment variables with safe defaults
+const WHAPI_API_KEY = process.env.WHAPI_API_KEY || '92TdFx4MRn64msLvX8iZC0kacRZcOQIt';
 const WHAPI_BASE_URL = (process.env.WHAPI_BASE_URL || 'https://gate.whapi.cloud/').replace(/\/+$/, '');
 const WHAPI_CHANNEL_ID = process.env.WHAPI_CHANNEL_ID || 'WONDRW-C8K3D';
 
@@ -182,16 +182,12 @@ async function getWhatsAppStatus() {
         if (channelExists) {
             return { 
                 status: 'connected', 
-                ready: true,
-                configured: true,
                 channel: channelId,
                 message: '✅ WhatsApp is ready to send invoices!' 
             };
         } else {
             return { 
                 status: 'connected', 
-                ready: true,
-                configured: true,
                 channel: channelId,
                 availableChannels: channels.map(c => c.id || c.name || c.channel_id),
                 message: `✅ Channel "${channelId}" configured. Ready to send invoices.` 
@@ -202,8 +198,6 @@ async function getWhatsAppStatus() {
         
         return { 
             status: 'connected', 
-            ready: true,
-            configured: true,
             channel: channelId,
             message: `✅ Whapi.Cloud channel ${channelId} configured.`
         };
