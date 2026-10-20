@@ -1,0 +1,882 @@
+{
+  "categories": [
+    {
+      "category_id": 1,
+      "category_name": "Fertilizer",
+      "description": null,
+      "created_at": "2026-08-09T17:17:51.825Z"
+    },
+    {
+      "category_id": 2,
+      "category_name": "Pesticide",
+      "description": null,
+      "created_at": "2026-08-10T16:10:48.479Z"
+    }
+  ],
+  "companies": [
+    {
+      "company_id": 6,
+      "company_name": "akash",
+      "contact_person": "Yuvaakash K",
+      "phone": "09994589432",
+      "email": "yuvaakash16@gmail.com",
+      "address": "no 20, siddartha nagar\nkovilambakkam",
+      "gstin": null,
+      "created_at": "2026-08-09T17:17:21.505Z",
+      "updated_at": "2026-08-09T17:17:21.505Z"
+    },
+    {
+      "company_id": 7,
+      "company_name": "Sabari crop care sciences",
+      "contact_person": "Sabari",
+      "phone": "9865432678",
+      "email": "sabari@gmail.com",
+      "address": "Vellore",
+      "gstin": null,
+      "created_at": "2026-08-14T16:57:43.397Z",
+      "updated_at": "2026-08-14T16:57:43.397Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": 2,
+      "customer_id": "CUST-E89F92",
+      "customer_name": "Yuvaakash K",
+      "phone_number": "9176018007",
+      "aadhaar_number": "236598237939",
+      "address": "no 20, siddartha nagar\nkovilambakkam",
+      "customer_type": "Farmer",
+      "email": "yuvaakash16@gmail.com",
+      "created_at": "2026-08-08T16:17:27.003Z",
+      "updated_at": "2026-08-08T16:34:14.840Z"
+    },
+    {
+      "id": 5,
+      "customer_id": "CUST-546633",
+      "customer_name": "vishnu.j",
+      "phone_number": "9941194065",
+      "aadhaar_number": "237467576123",
+      "address": "no:28,koudingaiyur,thendral nagar,chennai-600118",
+      "customer_type": "Dealer",
+      "email": "jvishnu942008@gmail.com",
+      "created_at": "2026-08-10T01:50:03.252Z",
+      "updated_at": "2026-08-10T01:50:03.252Z"
+    },
+    {
+      "id": 6,
+      "customer_id": "CUST-AA772E",
+      "customer_name": "Yuvaraj M",
+      "phone_number": "8428539107",
+      "aadhaar_number": "722868822312",
+      "address": "8/30 vanniyar mettu street ,ayyappanthangal,chennai-56",
+      "customer_type": "Wholesaler",
+      "email": "yuvi6054karthik@gmail.com",
+      "created_at": "2026-08-11T04:49:20.144Z",
+      "updated_at": "2026-08-11T04:50:25.678Z"
+    },
+    {
+      "id": 7,
+      "customer_id": "CUST-26656F",
+      "customer_name": "sreekanth",
+      "phone_number": "8220889747",
+      "aadhaar_number": "989471828391",
+      "address": "kaniyakumari",
+      "customer_type": "Farmer",
+      "email": "sreekanthaj23@gmail.com",
+      "created_at": "2026-08-11T15:47:29.622Z",
+      "updated_at": "2026-08-11T15:47:29.622Z"
+    },
+    {
+      "id": 8,
+      "customer_id": "CUST-E8A1D9",
+      "customer_name": "kannan",
+      "phone_number": "9894718182",
+      "aadhaar_number": "123456789012",
+      "address": "Andiyappanur",
+      "customer_type": "Farmer",
+      "email": "dee.kannan@hotmail.com",
+      "created_at": "2026-08-11T16:19:37.866Z",
+      "updated_at": "2026-08-11T16:19:37.866Z"
+    },
+    {
+      "id": 9,
+      "customer_id": "CUST-B4207F",
+      "customer_name": "priya p",
+      "phone_number": "9994589432",
+      "aadhaar_number": "987065432113",
+      "address": "kovilambakkam",
+      "customer_type": "Farmer",
+      "email": "priyasarathy2002@gmail.com",
+      "created_at": "2026-08-11T16:20:12.685Z",
+      "updated_at": "2026-08-11T16:20:37.894Z"
+    },
+    {
+      "id": 10,
+      "customer_id": "CUST-D82044",
+      "customer_name": "Tharun v",
+      "phone_number": "6374433825",
+      "aadhaar_number": "288145626889",
+      "address": "arcot",
+      "customer_type": "Farmer",
+      "email": "vt21250118@gmail.com",
+      "created_at": "2026-08-12T04:47:28.147Z",
+      "updated_at": "2026-08-12T04:47:28.147Z"
+    }
+  ],
+  "product_prices": [
+    {
+      "price_id": 1,
+      "product_id": 3,
+      "purchase_price": "100.00",
+      "selling_price": "130.00",
+      "effective_from": "2026-08-14T17:08:12.428Z",
+      "effective_to": null,
+      "is_active": true
+    },
+    {
+      "price_id": 2,
+      "product_id": 2,
+      "purchase_price": "100.00",
+      "selling_price": "150.00",
+      "effective_from": "2026-08-26T07:31:37.548Z",
+      "effective_to": null,
+      "is_active": true
+    },
+    {
+      "price_id": 3,
+      "product_id": 1,
+      "purchase_price": "200.00",
+      "selling_price": "500.00",
+      "effective_from": "2026-08-26T07:31:47.300Z",
+      "effective_to": null,
+      "is_active": true
+    }
+  ],
+  "products": [
+    {
+      "product_id": 1,
+      "product_code": "PRD-B15C5D",
+      "product_name": "My fertilizer",
+      "company_id": 6,
+      "category_id": 1,
+      "unit_id": 1,
+      "description": null,
+      "status": "Active",
+      "created_at": "2026-08-09T17:18:32.373Z",
+      "hsn_code": null,
+      "gst_rate": "0.00"
+    },
+    {
+      "product_id": 2,
+      "product_code": "PRD-FBA89D",
+      "product_name": "pest",
+      "company_id": 6,
+      "category_id": 2,
+      "unit_id": 1,
+      "description": null,
+      "status": "Active",
+      "created_at": "2026-08-10T16:20:41.640Z",
+      "hsn_code": null,
+      "gst_rate": "0.00"
+    },
+    {
+      "product_id": 3,
+      "product_code": "PRD-FFB743",
+      "product_name": "Hmp",
+      "company_id": 7,
+      "category_id": 2,
+      "unit_id": 1,
+      "description": null,
+      "status": "Active",
+      "created_at": "2026-08-14T17:00:33.375Z",
+      "hsn_code": null,
+      "gst_rate": "0.00"
+    }
+  ],
+  "purchase_items": [
+    {
+      "purchase_item_id": 1,
+      "purchase_id": 1,
+      "product_id": 1,
+      "quantity": 10,
+      "purchase_price": "100.00",
+      "total_amount": "1000.00"
+    },
+    {
+      "purchase_item_id": 2,
+      "purchase_id": 2,
+      "product_id": 2,
+      "quantity": 100,
+      "purchase_price": "49.71",
+      "total_amount": "4971.00"
+    },
+    {
+      "purchase_item_id": 3,
+      "purchase_id": 3,
+      "product_id": 2,
+      "quantity": 100,
+      "purchase_price": "50.00",
+      "total_amount": "5000.00"
+    },
+    {
+      "purchase_item_id": 4,
+      "purchase_id": 4,
+      "product_id": 2,
+      "quantity": 100,
+      "purchase_price": "50.00",
+      "total_amount": "5000.00"
+    },
+    {
+      "purchase_item_id": 5,
+      "purchase_id": 5,
+      "product_id": 2,
+      "quantity": 20,
+      "purchase_price": "120.00",
+      "total_amount": "2400.00"
+    },
+    {
+      "purchase_item_id": 6,
+      "purchase_id": 6,
+      "product_id": 3,
+      "quantity": 10,
+      "purchase_price": "100.00",
+      "total_amount": "1000.00"
+    }
+  ],
+  "purchases": [
+    {
+      "purchase_id": 1,
+      "company_id": 6,
+      "purchase_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "1000.00",
+      "notes": null,
+      "created_at": "2026-08-10T16:05:24.536Z"
+    },
+    {
+      "purchase_id": 2,
+      "company_id": 6,
+      "purchase_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "4971.00",
+      "notes": null,
+      "created_at": "2026-08-10T16:21:02.647Z"
+    },
+    {
+      "purchase_id": 3,
+      "company_id": 6,
+      "purchase_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "5000.00",
+      "notes": null,
+      "created_at": "2026-08-11T04:52:27.009Z"
+    },
+    {
+      "purchase_id": 4,
+      "company_id": 6,
+      "purchase_date": "2026-08-11T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "5000.00",
+      "notes": null,
+      "created_at": "2026-08-12T13:47:07.052Z"
+    },
+    {
+      "purchase_id": 5,
+      "company_id": 6,
+      "purchase_date": "2026-08-11T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "2400.00",
+      "notes": null,
+      "created_at": "2026-08-12T13:48:00.657Z"
+    },
+    {
+      "purchase_id": 6,
+      "company_id": 7,
+      "purchase_date": "2026-08-13T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "1000.00",
+      "notes": null,
+      "created_at": "2026-08-14T17:01:57.145Z"
+    }
+  ],
+  "sale_items": [
+    {
+      "sale_item_id": 1,
+      "sale_id": 1,
+      "product_id": 1,
+      "quantity": 15,
+      "selling_price": "150.00",
+      "total_amount": "2250.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 2,
+      "sale_id": 2,
+      "product_id": 1,
+      "quantity": 1,
+      "selling_price": "129.70",
+      "total_amount": "129.70",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 3,
+      "sale_id": 3,
+      "product_id": 1,
+      "quantity": 3,
+      "selling_price": "110.00",
+      "total_amount": "330.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 4,
+      "sale_id": 4,
+      "product_id": 2,
+      "quantity": 100,
+      "selling_price": "99.79",
+      "total_amount": "9979.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 5,
+      "sale_id": 5,
+      "product_id": 1,
+      "quantity": 1,
+      "selling_price": "100.05",
+      "total_amount": "100.05",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 6,
+      "sale_id": 6,
+      "product_id": 2,
+      "quantity": 12,
+      "selling_price": "10.00",
+      "total_amount": "120.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 7,
+      "sale_id": 7,
+      "product_id": 2,
+      "quantity": 28,
+      "selling_price": "100.00",
+      "total_amount": "2800.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 8,
+      "sale_id": 8,
+      "product_id": 2,
+      "quantity": 10,
+      "selling_price": "150.00",
+      "total_amount": "1500.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 9,
+      "sale_id": 9,
+      "product_id": 2,
+      "quantity": 14,
+      "selling_price": "120.00",
+      "total_amount": "1680.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 10,
+      "sale_id": 10,
+      "product_id": 2,
+      "quantity": 6,
+      "selling_price": "100.00",
+      "total_amount": "600.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 11,
+      "sale_id": 11,
+      "product_id": 2,
+      "quantity": 30,
+      "selling_price": "100.00",
+      "total_amount": "3000.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 12,
+      "sale_id": 12,
+      "product_id": 2,
+      "quantity": 50,
+      "selling_price": "99.83",
+      "total_amount": "4991.50",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    },
+    {
+      "sale_item_id": 13,
+      "sale_id": 13,
+      "product_id": 3,
+      "quantity": 2,
+      "selling_price": "120.00",
+      "total_amount": "252.00",
+      "gst_rate": "5.00",
+      "cgst_amount": "6.00",
+      "sgst_amount": "6.00"
+    },
+    {
+      "sale_item_id": 14,
+      "sale_id": 14,
+      "product_id": 3,
+      "quantity": 5,
+      "selling_price": "500.00",
+      "total_amount": "2500.00",
+      "gst_rate": "0.00",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00"
+    }
+  ],
+  "sales": [
+    {
+      "sale_id": 1,
+      "customer_id": 2,
+      "sale_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "2250.00",
+      "notes": null,
+      "created_at": "2026-08-10T16:06:13.836Z"
+    },
+    {
+      "sale_id": 2,
+      "customer_id": 5,
+      "sale_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "129.70",
+      "notes": null,
+      "created_at": "2026-08-10T16:07:14.911Z"
+    },
+    {
+      "sale_id": 3,
+      "customer_id": 5,
+      "sale_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "330.00",
+      "notes": null,
+      "created_at": "2026-08-10T16:07:45.402Z"
+    },
+    {
+      "sale_id": 4,
+      "customer_id": 2,
+      "sale_date": "2026-08-09T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "9979.00",
+      "notes": null,
+      "created_at": "2026-08-10T16:41:11.679Z"
+    },
+    {
+      "sale_id": 5,
+      "customer_id": 6,
+      "sale_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": null,
+      "total_amount": "100.05",
+      "notes": null,
+      "created_at": "2026-08-11T04:51:25.893Z"
+    },
+    {
+      "sale_id": 6,
+      "customer_id": 2,
+      "sale_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": "SAAT0001",
+      "total_amount": "120.00",
+      "notes": null,
+      "created_at": "2026-08-11T14:25:00.259Z"
+    },
+    {
+      "sale_id": 7,
+      "customer_id": 7,
+      "sale_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": "SAAT0002",
+      "total_amount": "2800.00",
+      "notes": null,
+      "created_at": "2026-08-11T15:48:39.666Z"
+    },
+    {
+      "sale_id": 8,
+      "customer_id": 9,
+      "sale_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": "SAAT0003",
+      "total_amount": "1500.00",
+      "notes": null,
+      "created_at": "2026-08-11T16:21:10.309Z"
+    },
+    {
+      "sale_id": 9,
+      "customer_id": 8,
+      "sale_date": "2026-08-10T18:30:00.000Z",
+      "invoice_number": "SAAT0004",
+      "total_amount": "1680.00",
+      "notes": null,
+      "created_at": "2026-08-11T16:22:50.755Z"
+    },
+    {
+      "sale_id": 10,
+      "customer_id": 10,
+      "sale_date": "2026-08-11T18:30:00.000Z",
+      "invoice_number": "SAAT0005",
+      "total_amount": "600.00",
+      "notes": null,
+      "created_at": "2026-08-12T04:48:33.341Z"
+    },
+    {
+      "sale_id": 11,
+      "customer_id": 8,
+      "sale_date": "2026-08-11T18:30:00.000Z",
+      "invoice_number": "SAAT0006",
+      "total_amount": "3000.00",
+      "notes": null,
+      "created_at": "2026-08-12T13:46:10.038Z"
+    },
+    {
+      "sale_id": 12,
+      "customer_id": 9,
+      "sale_date": "2026-08-11T18:30:00.000Z",
+      "invoice_number": "SAAT0007",
+      "total_amount": "4991.50",
+      "notes": null,
+      "created_at": "2026-08-12T15:56:43.255Z"
+    },
+    {
+      "sale_id": 13,
+      "customer_id": 9,
+      "sale_date": "2026-08-13T18:30:00.000Z",
+      "invoice_number": "SAAT0008",
+      "total_amount": "252.00",
+      "notes": null,
+      "created_at": "2026-08-14T17:04:38.146Z"
+    },
+    {
+      "sale_id": 14,
+      "customer_id": 2,
+      "sale_date": "2026-08-25T18:30:00.000Z",
+      "invoice_number": "SAAT0009",
+      "total_amount": "2500.00",
+      "notes": null,
+      "created_at": "2026-08-26T07:24:20.343Z"
+    }
+  ],
+  "stock": [
+    {
+      "stock_id": 1,
+      "product_id": 1,
+      "quantity": 0,
+      "reorder_level": 0,
+      "updated_at": "2026-08-11T04:51:25.893Z"
+    },
+    {
+      "stock_id": 3,
+      "product_id": 2,
+      "quantity": 70,
+      "reorder_level": 0,
+      "updated_at": "2026-08-12T15:56:43.255Z"
+    },
+    {
+      "stock_id": 7,
+      "product_id": 3,
+      "quantity": 3,
+      "reorder_level": 0,
+      "updated_at": "2026-08-26T07:24:20.343Z"
+    }
+  ],
+  "stock_movements": [
+    {
+      "movement_id": 1,
+      "product_id": 1,
+      "movement_type": "PURCHASE",
+      "quantity": 78,
+      "reason": null,
+      "created_at": "2026-08-09T17:18:59.670Z",
+      "reference_id": null
+    },
+    {
+      "movement_id": 2,
+      "product_id": 1,
+      "movement_type": "PURCHASE",
+      "quantity": 100,
+      "reason": null,
+      "created_at": "2026-08-09T17:19:18.242Z",
+      "reference_id": null
+    },
+    {
+      "movement_id": 3,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 150,
+      "reason": "sold",
+      "created_at": "2026-08-09T17:19:33.441Z",
+      "reference_id": null
+    },
+    {
+      "movement_id": 4,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 28,
+      "reason": null,
+      "created_at": "2026-08-09T17:19:57.950Z",
+      "reference_id": null
+    },
+    {
+      "movement_id": 5,
+      "product_id": 1,
+      "movement_type": "PURCHASE",
+      "quantity": 10,
+      "reason": "buy",
+      "created_at": "2026-08-10T01:51:02.292Z",
+      "reference_id": null
+    },
+    {
+      "movement_id": 6,
+      "product_id": 1,
+      "movement_type": "PURCHASE",
+      "quantity": 10,
+      "reason": "Purchase",
+      "created_at": "2026-08-10T16:05:24.536Z",
+      "reference_id": 1
+    },
+    {
+      "movement_id": 7,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 15,
+      "reason": "Sale",
+      "created_at": "2026-08-10T16:06:13.836Z",
+      "reference_id": 1
+    },
+    {
+      "movement_id": 8,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 1,
+      "reason": "Sale",
+      "created_at": "2026-08-10T16:07:14.911Z",
+      "reference_id": 2
+    },
+    {
+      "movement_id": 9,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 3,
+      "reason": "Sale",
+      "created_at": "2026-08-10T16:07:45.402Z",
+      "reference_id": 3
+    },
+    {
+      "movement_id": 10,
+      "product_id": 2,
+      "movement_type": "PURCHASE",
+      "quantity": 100,
+      "reason": "Purchase",
+      "created_at": "2026-08-10T16:21:02.647Z",
+      "reference_id": 2
+    },
+    {
+      "movement_id": 11,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 100,
+      "reason": "Sale",
+      "created_at": "2026-08-10T16:41:11.679Z",
+      "reference_id": 4
+    },
+    {
+      "movement_id": 12,
+      "product_id": 1,
+      "movement_type": "SALE",
+      "quantity": 1,
+      "reason": "Sale",
+      "created_at": "2026-08-11T04:51:25.893Z",
+      "reference_id": 5
+    },
+    {
+      "movement_id": 13,
+      "product_id": 2,
+      "movement_type": "PURCHASE",
+      "quantity": 100,
+      "reason": "Purchase",
+      "created_at": "2026-08-11T04:52:27.009Z",
+      "reference_id": 3
+    },
+    {
+      "movement_id": 14,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 12,
+      "reason": "Invoice: SAAT0001",
+      "created_at": "2026-08-11T14:25:00.259Z",
+      "reference_id": 6
+    },
+    {
+      "movement_id": 15,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 28,
+      "reason": "Invoice: SAAT0002",
+      "created_at": "2026-08-11T15:48:39.666Z",
+      "reference_id": 7
+    },
+    {
+      "movement_id": 16,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 10,
+      "reason": "Invoice: SAAT0003",
+      "created_at": "2026-08-11T16:21:10.309Z",
+      "reference_id": 8
+    },
+    {
+      "movement_id": 17,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 14,
+      "reason": "Invoice: SAAT0004",
+      "created_at": "2026-08-11T16:22:50.755Z",
+      "reference_id": 9
+    },
+    {
+      "movement_id": 18,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 6,
+      "reason": "Invoice: SAAT0005",
+      "created_at": "2026-08-12T04:48:33.341Z",
+      "reference_id": 10
+    },
+    {
+      "movement_id": 19,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 30,
+      "reason": "Invoice: SAAT0006",
+      "created_at": "2026-08-12T13:46:10.038Z",
+      "reference_id": 11
+    },
+    {
+      "movement_id": 20,
+      "product_id": 2,
+      "movement_type": "PURCHASE",
+      "quantity": 100,
+      "reason": "Purchase",
+      "created_at": "2026-08-12T13:47:07.052Z",
+      "reference_id": 4
+    },
+    {
+      "movement_id": 21,
+      "product_id": 2,
+      "movement_type": "PURCHASE",
+      "quantity": 20,
+      "reason": "Purchase",
+      "created_at": "2026-08-12T13:48:00.657Z",
+      "reference_id": 5
+    },
+    {
+      "movement_id": 22,
+      "product_id": 2,
+      "movement_type": "SALE",
+      "quantity": 50,
+      "reason": "Invoice: SAAT0007",
+      "created_at": "2026-08-12T15:56:43.255Z",
+      "reference_id": 12
+    },
+    {
+      "movement_id": 23,
+      "product_id": 3,
+      "movement_type": "PURCHASE",
+      "quantity": 10,
+      "reason": "Purchase",
+      "created_at": "2026-08-14T17:01:57.145Z",
+      "reference_id": 6
+    },
+    {
+      "movement_id": 24,
+      "product_id": 3,
+      "movement_type": "SALE",
+      "quantity": 2,
+      "reason": "Invoice: SAAT0008",
+      "created_at": "2026-08-14T17:04:38.146Z",
+      "reference_id": 13
+    },
+    {
+      "movement_id": 25,
+      "product_id": 3,
+      "movement_type": "SALE",
+      "quantity": 5,
+      "reason": "Invoice: SAAT0009",
+      "created_at": "2026-08-26T07:24:20.343Z",
+      "reference_id": 14
+    }
+  ],
+  "units": [
+    {
+      "unit_id": 1,
+      "unit_name": "kg",
+      "abbreviation": "kiligrams",
+      "created_at": "2026-08-09T17:18:18.448Z"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "full_name": "System Admin",
+      "email": "admin@shriammanagro.com",
+      "password_hash": "$2b$10$nOnRDUl15gxraS1t7gb2jepecsm7n/p0GAhTMelir1.4eDcu6uglO",
+      "role": "Admin",
+      "created_at": "2026-08-08T13:27:41.624Z",
+      "updated_at": "2026-08-08T13:27:41.624Z"
+    },
+    {
+      "id": 3,
+      "full_name": "Yuvaakash",
+      "email": "yuvaakash16@gmail.com",
+      "password_hash": "$2b$10$AbymAU5c1kHHo4QgH1XR2uFZ6e3ItYQCTCabv4e5E7mh.HzBsX8rm",
+      "role": "Staff",
+      "created_at": "2026-08-08T13:33:35.010Z",
+      "updated_at": "2026-08-08T13:33:35.010Z"
+    },
+    {
+      "id": 4,
+      "full_name": "tharunpranaav",
+      "email": "pranavsivrem@gmail.com",
+      "password_hash": "$2b$10$W2OOvrVUrNMqWTpeQl9.DemqfSqm5tdPVGnLiTkjjipbXgEN1uj9O",
+      "role": "Staff",
+      "created_at": "2026-08-13T17:24:01.601Z",
+      "updated_at": "2026-08-13T17:24:01.601Z"
+    },
+    {
+      "id": 5,
+      "full_name": "Priya",
+      "email": "priya@gmail.com",
+      "password_hash": "$2b$10$/vI3ZH5YyjHF3QaiDMUOzeeUrHrhwjrMzVUH5hspvdYc4XglCtyUC",
+      "role": "Staff",
+      "created_at": "2026-08-14T16:56:09.191Z",
+      "updated_at": "2026-08-14T16:56:09.191Z"
+    }
+  ]
+}

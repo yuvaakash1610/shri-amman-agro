@@ -182,24 +182,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cartStockIndicator.className   = 'stock-indicator out-stock';
             }
 
-            // Auto-fill default selling price from Price Management
+            // Auto-fill default selling price from Price Management / Purchase data
             const priceRes = await fetch(`${apiBaseUrl}/api/prices/${pid}`, { headers: { Authorization: `Bearer ${token}` } });
             if (priceRes.ok) {
                 const pricesData = await priceRes.json();
-                let activePriceRecord = null;
 
-                if (Array.isArray(pricesData) && pricesData.length > 0) {
-                    activePriceRecord = pricesData.find(p => p.is_active === true || p.is_active === 'true') || pricesData[0];
-                } else if (pricesData && typeof pricesData === 'object') {
-                    activePriceRecord = pricesData;
+                // New response format: { prices: [...], latest_purchase_price: ... }
+                let pricesList = [];
+                let latestPurchasePrice = null;
+
+                if (pricesData && pricesData.prices && Array.isArray(pricesData.prices)) {
+                    pricesList = pricesData.prices;
+                    latestPurchasePrice = pricesData.latest_purchase_price;
+                } else if (Array.isArray(pricesData)) {
+                    // Legacy format: array of prices
+                    pricesList = pricesData;
                 }
 
-                if (activePriceRecord && activePriceRecord.selling_price !== undefined && activePriceRecord.selling_price !== null) {
+                let activePriceRecord = null;
+                if (pricesList.length > 0) {
+                    activePriceRecord = pricesList.find(p => p.is_active === true || p.is_active === 'true') || pricesList[0];
+                }
+
+                // Try to fill selling price from active price record
+                if (activePriceRecord && activePriceRecord.selling_price != null && parseFloat(activePriceRecord.selling_price) > 0) {
                     cartPriceInput.value = parseFloat(activePriceRecord.selling_price);
-                } else if (prod && prod.selling_price !== undefined && prod.selling_price !== null) {
+                }
+                // If no selling price set, use purchase price as reference so user can adjust
+                else if (activePriceRecord && activePriceRecord.purchase_price != null && parseFloat(activePriceRecord.purchase_price) > 0) {
+                    cartPriceInput.value = parseFloat(activePriceRecord.purchase_price);
+                }
+                // Fallback to latest purchase price from purchase_items
+                else if (latestPurchasePrice != null && parseFloat(latestPurchasePrice) > 0) {
+                    cartPriceInput.value = parseFloat(latestPurchasePrice);
+                }
+                // Last resort: product-level selling price
+                else if (prod && prod.selling_price != null && parseFloat(prod.selling_price) > 0) {
                     cartPriceInput.value = parseFloat(prod.selling_price);
                 }
-            } else if (prod && prod.selling_price !== undefined && prod.selling_price !== null) {
+            } else if (prod && prod.selling_price != null && parseFloat(prod.selling_price) > 0) {
                 cartPriceInput.value = parseFloat(prod.selling_price);
             }
         } catch (err) {

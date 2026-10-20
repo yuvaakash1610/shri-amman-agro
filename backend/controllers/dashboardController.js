@@ -251,7 +251,9 @@ const getProfitAnalytics = async (req, res) => {
         FROM products pr
         LEFT JOIN sale_items si ON si.product_id = pr.product_id
         LEFT JOIN categories cat ON cat.category_id = pr.category_id
-        LEFT JOIN product_prices pp ON pp.product_id = pr.product_id AND pp.is_active = true
+        LEFT JOIN LATERAL (
+          SELECT purchase_price FROM product_prices WHERE product_id = pr.product_id AND is_active = true ORDER BY effective_from DESC, price_id DESC LIMIT 1
+        ) pp ON true
         GROUP BY pr.product_id, pr.product_name, pr.product_code, cat.category_name, pp.purchase_price
         HAVING COALESCE(SUM(si.quantity), 0) > 0
         ORDER BY total_profit DESC

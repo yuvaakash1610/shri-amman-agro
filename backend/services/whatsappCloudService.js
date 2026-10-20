@@ -1,13 +1,9 @@
 const axios = require('axios');
 
-const OPENWA_API_URL = (process.env.OPENWA_API_URL || 'https://openwa-production-12d1.up.railway.app').replace(/\/+$/, '');
-const OPENWA_API_KEY = process.env.OPENWA_API_KEY || 'ba6c55b2cddf42c969c5c1ec3b563b0a3d829882242d7d10';
+const OPENWA_API_URL = (process.env.OPENWA_API_URL || '').replace(/\/+$/, '');
+const OPENWA_API_KEY = process.env.OPENWA_API_KEY || '';
 const OPENWA_SESSION_ID = process.env.OPENWA_SESSION_ID || 'default';
 
-console.log('🔧 OpenWA Service Initialized:');
-console.log(`  - API URL: ${OPENWA_API_URL || '❌ Missing'}`);
-console.log(`  - API Key: ${OPENWA_API_KEY ? '✅ Set' : '❌ Missing'}`);
-console.log(`  - Session Identifier: ${OPENWA_SESSION_ID}`);
 
 let cachedSessionUuid = null;
 
@@ -38,6 +34,33 @@ async function resolveSessionUuid(apiUrl, apiKey, sessionKey = 'default') {
         console.warn('⚠️ Could not resolve session UUID from /api/sessions:', err.message);
     }
     return sessionKey;
+}
+
+/**
+ * Ensure the OpenWA session is active. If the session status is not ready, attempt to start it.
+ */
+async function ensureSessionActive(apiUrl, apiKey, sessionUuid) {
+    try {
+        const statusResp = await axios.get(`${apiUrl}/api/sessions/${sessionUuid}`, {
+            headers: { 'X-API-Key': apiKey },
+            timeout: 8000
+        });
+        const data = statusResp.data;
+        const isReady = data.status === 'ready' || data.status === 'connected' || data.engineLoaded === true;
+        if (isReady) {
+            return true;
+        }
+        // Attempt to start the session
+        await axios.post(`${apiUrl}/api/sessions/${sessionUuid}/start`, {}, {
+            headers: { 'X-API-Key': apiKey },
+            timeout: 15000
+        });
+        console.log('✅ Session start triggered');
+        return true;
+    } catch (e) {
+        console.warn('Failed to ensure session active:', e.message);
+        return false;
+    }
 }
 
 /**
@@ -76,6 +99,9 @@ async function sendWhatsAppMessage(recipient, message) {
 
     const chatId = `${phone}@c.us`;
     const sessionUuid = await resolveSessionUuid(apiUrl, apiKey, sessionKey);
+
+    // Ensure session is active before sending
+    await ensureSessionActive(apiUrl, apiKey, sessionUuid);
 
     console.log(`📤 Sending to: ${chatId} via session: ${sessionUuid}`);
 
@@ -126,6 +152,9 @@ async function sendWhatsAppDocument(recipient, pdfBuffer, filename = 'invoice.pd
 
     const chatId = `${phone}@c.us`;
     const sessionUuid = await resolveSessionUuid(apiUrl, apiKey, sessionKey);
+
+    // Ensure session is active before sending document
+    await ensureSessionActive(apiUrl, apiKey, sessionUuid);
 
     console.log(`📤 Sending PDF invoice to: ${chatId} via session: ${sessionUuid}`);
 

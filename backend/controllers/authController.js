@@ -10,8 +10,10 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     // Check if user exists
-    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userResult = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (userResult.rows.length === 0) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
@@ -24,7 +26,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    // Generate JWT
+    // Generate JWT (24 hour expiration)
     const payload = {
       id: user.id,
       email: user.email,
@@ -32,7 +34,7 @@ const login = async (req, res) => {
       fullName: user.full_name
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     res.json({
       message: 'Login successful',
@@ -53,8 +55,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     // Check if user exists
-    const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userCheck = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (userCheck.rows.length > 0) {
       return res.status(409).json({ message: 'Email is already in use.' });
     }
@@ -69,10 +73,10 @@ const register = async (req, res) => {
       VALUES ($1, $2, $3, $4)
       RETURNING id, full_name, email, role
     `;
-    const result = await db.query(insertQuery, [fullName, email, passwordHash, 'Staff']);
+    const result = await db.query(insertQuery, [fullName.trim(), cleanEmail, passwordHash, 'Staff']);
     const newUser = result.rows[0];
 
-    // Generate JWT
+    // Generate JWT (24 hour expiration)
     const payload = {
       id: newUser.id,
       email: newUser.email,
@@ -80,7 +84,7 @@ const register = async (req, res) => {
       fullName: newUser.full_name
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     res.status(201).json({
       message: 'Account created successfully',

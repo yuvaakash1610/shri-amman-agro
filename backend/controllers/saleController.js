@@ -1,13 +1,6 @@
 const db = require('../config/db');
-const dotenv = require('dotenv');
-dotenv.config();
+const pool = db.pool;
 
-const pool = process.env.DATABASE_URL
-  ? new (require('pg').Pool)({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  : new (require('pg').Pool)({
-      user: process.env.DB_USER, host: process.env.DB_HOST,
-      database: process.env.DB_NAME, password: process.env.DB_PASSWORD, port: process.env.DB_PORT,
-    });
 
 const createSale = async (req, res) => {
   // Supports multi-item cart: body = { customerId, saleDate, invoiceNumber, notes, items: [{productId, quantity, sellingPrice, gstRate}] }

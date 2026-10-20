@@ -25,6 +25,24 @@ const whatsappService = isVercel ? null : require('./services/whatsappService');
 
 dotenv.config();
 
+// Prevent background library errors from crashing the Node.js server
+process.on('uncaughtException', (err) => {
+  if (err.message && (err.message.includes('EBUSY') || err.message.includes('.wwebjs_auth') || err.message.includes('whatsapp') || err.message.includes('Execution context was destroyed'))) {
+    console.warn('Recovered from background process notice:', err.message);
+    return;
+  }
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  const msg = reason?.message || String(reason);
+  if (msg.includes('EBUSY') || msg.includes('.wwebjs_auth') || msg.includes('whatsapp') || msg.includes('Execution context was destroyed')) {
+    console.warn('Recovered from background promise notice:', msg);
+    return;
+  }
+  console.error('Unhandled Rejection:', reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const frontendPath = path.resolve(__dirname, '..', 'frontend');

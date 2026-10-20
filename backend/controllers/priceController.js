@@ -6,7 +6,9 @@ const listPrices = async (req, res) => {
     const params = [];
     const conditions = [];
     let query = `
-      SELECT p.product_id, p.product_code, p.product_name, c.company_name, pp.price_id, pp.purchase_price, pp.selling_price, pp.effective_from, pp.effective_to, pp.is_active
+      SELECT p.product_id, p.product_code, p.product_name, c.company_name,
+             pp.price_id, pp.purchase_price, pp.selling_price, pp.effective_from, pp.effective_to, pp.is_active,
+             lp.latest_purchase_price
       FROM products p
       LEFT JOIN companies c ON c.company_id = p.company_id
       LEFT JOIN LATERAL (
@@ -16,6 +18,14 @@ const listPrices = async (req, res) => {
         ORDER BY effective_from DESC, price_id DESC
         LIMIT 1
       ) pp ON true
+      LEFT JOIN LATERAL (
+        SELECT pi.purchase_price AS latest_purchase_price
+        FROM purchase_items pi
+        JOIN purchases pu ON pu.purchase_id = pi.purchase_id
+        WHERE pi.product_id = p.product_id
+        ORDER BY pu.purchase_date DESC, pi.purchase_item_id DESC
+        LIMIT 1
+      ) lp ON true
     `;
 
     if (search) {
@@ -55,7 +65,22 @@ const getPricesByProduct = async (req, res) => {
       [numericProductId]
     );
 
-    res.json(result.rows);
+    // Also fetch the latest purchase price from purchase_items as a fallback
+    const latestPurchaseRes = await db.query(
+      `SELECT pi.purchase_price AS latest_purchase_price
+       FROM purchase_items pi
+       JOIN purchases pu ON pu.purchase_id = pi.purchase_id
+       WHERE pi.product_id = $1::int
+       ORDER BY pu.purchase_date DESC, pi.purchase_item_id DESC
+       LIMIT 1`,
+      [numericProductId]
+    );
+
+    const rows = result.rows;
+    const latestPurchasePrice = latestPurchaseRes.rows.length > 0 ? latestPurchaseRes.rows[0].latest_purchase_price : null;
+
+    // Attach latest_purchase_price to the response for the frontend to use
+    res.json({ prices: rows, latest_purchase_price: latestPurchasePrice });
   } catch (error) {
     console.error('Get product prices error:', error);
     res.status(500).json({ message: 'Failed to load price history.' });

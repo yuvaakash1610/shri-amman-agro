@@ -36,6 +36,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+};
+
+    // Generate distinct pastel colors for charts
+    const generateDistinctColors = (count) => {
+        const colors = [];
+        const saturation = 70; // percent
+        const lightness = 60; // percent
+        for (let i = 0; i < count; i++) {
+            const hue = Math.round((360 / count) * i);
+            colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+        }
+        return colors;
     };
 
     const renderAvailableStockList = (items) => {
@@ -186,10 +198,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     labels: stockData.map(d => d.product_name),
                     datasets: [{
                         data: stockData.map(d => d.quantity),
-                        backgroundColor: ['#2F6B38', '#E2B93B', '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#64748B'],
+                        backgroundColor: generateDistinctColors(stockData.length),
                         borderWidth: 0
                     }]
                 }, { plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } } });
+
             }
 
             // 2. Purchase vs Sales (Bar)

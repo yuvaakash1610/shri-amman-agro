@@ -1,15 +1,6 @@
 const db = require('../config/db');
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
-dotenv.config();
+const pool = db.pool;
 
-// We need a raw pool for transactions
-const pool = process.env.DATABASE_URL
-  ? new (require('pg').Pool)({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  : new (require('pg').Pool)({
-      user: process.env.DB_USER, host: process.env.DB_HOST,
-      database: process.env.DB_NAME, password: process.env.DB_PASSWORD, port: process.env.DB_PORT,
-    });
 
 const createPurchase = async (req, res) => {
   const { companyId, productId, quantity, purchasePrice, purchaseDate, invoiceNumber, notes } = req.body;
@@ -59,8 +50,38 @@ const createPurchase = async (req, res) => {
       [productId, qty, purchaseId, invoiceNumber ? `Invoice: ${invoiceNumber}` : 'Purchase']
     );
 
+    // Sync latest purchase price to product_prices
+    const currentPriceRes = await client.query(
+      `SELECT price_id, purchase_price, selling_price 
+       FROM product_prices 
+       WHERE product_id = $1 AND is_active = TRUE 
+       ORDER BY effective_from DESC, price_id DESC LIMIT 1`,
+      [productId]
+    );
+
+    if (currentPriceRes.rows.length > 0) {
+      const existingSellingPrice = currentPriceRes.rows[0].selling_price || 0;
+      await client.query(
+        `UPDATE product_prices 
+         SET is_active = FALSE, effective_to = CURRENT_TIMESTAMP 
+         WHERE product_id = $1 AND is_active = TRUE`,
+        [productId]
+      );
+      await client.query(
+        `INSERT INTO product_prices (product_id, purchase_price, selling_price, effective_from, effective_to, is_active)
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, NULL, TRUE)`,
+        [productId, price, existingSellingPrice]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO product_prices (product_id, purchase_price, selling_price, effective_from, effective_to, is_active)
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, NULL, TRUE)`,
+        [productId, price, 0]
+      );
+    }
+
     await client.query('COMMIT');
-    res.status(201).json({ message: 'Purchase recorded successfully.', purchaseId });
+    res.status(201).json({ message: 'Purchase recorded successfully and price updated.', purchaseId });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Create purchase error:', error);
